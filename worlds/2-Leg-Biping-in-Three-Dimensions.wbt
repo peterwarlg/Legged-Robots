@@ -1,0 +1,266 @@
+#VRML_SIM R2020b utf8
+WorldInfo {
+  basicTimeStep 2
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.1436831857573849 -0.9837555853276413 -0.10761082876401794 1.3560620870042843
+  position -24.559154628092855 6.225652313539697 6.416208027342022
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 15 15
+  floorTileSize 1.5 1.5
+  wallHeight 0.001
+}
+Robot {
+  translation -2.642608046891933e-11 0.8607310163461263 2.4992448814981723
+  rotation 0.9999999999999999 2.5343804635194985e-09 -6.989129325053133e-10 0.0018736904785183076
+  children [
+    DEF body Shape {
+      appearance PBRAppearance {
+        baseColorMap ImageTexture {
+          url [
+            "textures/water.jpg"
+          ]
+        }
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.1
+        radius 0.6
+      }
+      castShadows FALSE
+    }
+    Hinge2Joint {
+      jointParameters HingeJointParameters {
+        position -0.023379155365803685
+      }
+      jointParameters2 JointParameters {
+        position -2.120126476406645e-13
+      }
+      device [
+        RotationalMotor {
+          name "X rotational motor"
+          maxTorque 1000
+        }
+        PositionSensor {
+          name "X position sensor"
+        }
+      ]
+      device2 [
+        RotationalMotor {
+          name "Z rotational motor"
+          maxTorque 1000
+        }
+        PositionSensor {
+          name "Z position sensor"
+        }
+      ]
+      endPoint Solid {
+        translation -3.1321184475770333e-13 0.0002294992080528681 -5.366475421847463e-06
+        rotation -0.9999999999999999 -1.0600632382033223e-13 -9.068034637101048e-12 0.023379155365794727
+        children [
+          DEF shaft Shape {
+            appearance PBRAppearance {
+              baseColor 0 0 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.3
+              radius 0.05
+            }
+            castShadows FALSE
+          }
+          SliderJoint {
+            jointParameters JointParameters {
+              position -0.06800938242060818
+              axis 0 1 0
+              minStop -0.4
+              dampingConstant 10
+              staticFriction 0.2
+            }
+            device [
+              LinearMotor {
+                maxForce 1600
+              }
+              PositionSensor {
+              }
+            ]
+            endPoint Solid {
+              translation 0 -0.06800938242060818 0
+              children [
+                DEF leg Shape {
+                  appearance PBRAppearance {
+                    baseColor 1 1 0
+                    metalness 0
+                  }
+                  geometry Cylinder {
+                    height 1.58
+                    radius 0.02
+                  }
+                  castShadows FALSE
+                }
+                Transform {
+                  translation 0 -0.77 0
+                  children [
+                    DEF foot Shape {
+                      appearance PBRAppearance {
+                        baseColor 1 0 0
+                        metalness 0
+                      }
+                      geometry Sphere {
+                        radius 0.03
+                        subdivision 3
+                      }
+                      castShadows FALSE
+                    }
+                    TouchSensor {
+                      translation 1.3268994535052187e-17 6.69717905121825e-05 -3.6273947845444354e-08
+                      rotation -1 4.440024031942616e-13 -7.73555691881224e-11 -4.43973432635858e-08
+                      boundingObject USE foot
+                      physics Physics {
+                      }
+                      linearVelocity 5.762060513378247e-13 -0.004539231822300182 0.00455731495516985
+                      angularVelocity 0.14720217149056078 -1.1787915429519005e-13 -1.9599004238725742e-11
+                    }
+                  ]
+                }
+              ]
+              boundingObject USE leg
+              physics Physics {
+                density -1
+                mass 1
+              }
+              linearVelocity 1.56646195636379e-11 -0.002131568714152309 0.11786823027706472
+              angularVelocity 0.1472024241942124 -1.1788046240439073e-13 -1.959904249507787e-11
+            }
+          }
+        ]
+        boundingObject USE shaft
+        physics Physics {
+          density -1
+          mass 0.5
+        }
+        linearVelocity 1.68885534899319e-11 -0.07273183733714604 0.1293273078508429
+        angularVelocity 0.1472021931734705 -1.1787969244563487e-13 -1.9599015987955416e-11
+      }
+    }
+    InertialUnit {
+      boundingObject USE body
+      physics Physics {
+        density -1
+        mass 0.5
+      }
+    }
+  ]
+  boundingObject USE body
+  physics Physics {
+    density -1
+    mass 15
+  }
+  controller "my_controller_py_OOP"
+  linearVelocity 1.6882739175884466e-11 -0.07277645296739511 0.1292846946574361
+  angularVelocity -0.048323692101573085 7.27770816795662e-13 8.521412101237607e-12
+}
+Robot {
+  translation 0 2.49 -0.86
+  children [
+    DEF externBody Shape {
+      geometry Sphere {
+        radius 0.1
+      }
+      castShadows FALSE
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        position -0.10141279685479132
+      }
+      endPoint Solid {
+        translation 0 -1.4922933203264543 0.15185861886996427
+        rotation -1 0 0 0.10141279685478918
+        children [
+          DEF externBall Shape {
+            appearance PBRAppearance {
+              roughness 0.5
+            }
+            geometry Sphere {
+              radius 0.2
+              subdivision 3
+            }
+            castShadows FALSE
+          }
+          Transform {
+            translation 0 0.75 0
+            children [
+              Shape {
+                appearance PBRAppearance {
+                  baseColor 1 0 0
+                  roughness 0.5
+                  metalness 0
+                  IBLStrength 2
+                }
+                geometry Cylinder {
+                  height 1.5
+                  radius 0.01
+                }
+                castShadows FALSE
+              }
+            ]
+          }
+        ]
+        boundingObject USE externBall
+        physics Physics {
+          density -1
+          mass 2
+        }
+        linearVelocity -6.69266263320227e-235 0.03008440808195955 0.2961787897154719
+        angularVelocity -0.1984681515889315 -2.0712726644996878e-234 8.64001002690202e-235
+      }
+    }
+  ]
+  name "robot(1)"
+  boundingObject USE externBody
+}
+Robot {
+  translation 0 0.1 0
+  children [
+    SliderJoint {
+      jointParameters JointParameters {
+        position 2
+        axis 0 1 0
+      }
+      endPoint Solid {
+        translation 0 1 0
+        children [
+          Shape {
+            appearance Appearance {
+            }
+            geometry Cylinder {
+              height 1
+              radius 0.05
+            }
+          }
+        ]
+        boundingObject Cylinder {
+          height 1
+          radius 0.05
+        }
+        physics Physics {
+          density 1
+        }
+      }
+    }
+  ]
+  name "robot(2)"
+  boundingObject Cylinder {
+    height 0.1
+    radius 0.5
+  }
+  physics Physics {
+    mass 1000
+  }
+}

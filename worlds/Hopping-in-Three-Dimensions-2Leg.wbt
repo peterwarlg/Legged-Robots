@@ -1,0 +1,372 @@
+#VRML_SIM R2020b utf8
+WorldInfo {
+  basicTimeStep 2
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.3821898730126193 -0.9013522024012547 -0.20370348105274325 1.0972105124968003
+  position -6.496134649551413 4.563028496940578 4.753369562259268
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 6 9
+  floorTileSize 1.5 1.5
+  wallHeight 0.001
+}
+Robot {
+  translation 0 0.8 0
+  children [
+    Hinge2Joint {
+      jointParameters HingeJointParameters {
+      }
+      jointParameters2 JointParameters {
+      }
+      device [
+        RotationalMotor {
+          name "X rotational motor A"
+          maxTorque 1000
+        }
+        PositionSensor {
+          name "X position sensor A"
+        }
+      ]
+      device2 [
+        RotationalMotor {
+          name "Z rotational motor A"
+          maxTorque 1000
+        }
+        PositionSensor {
+          name "Z position sensor A"
+        }
+      ]
+      endPoint Solid {
+        translation -3.132605147929815e-13 0.00022956194274170732 -1.2420957273116862e-20
+        children [
+          SliderJoint {
+            jointParameters JointParameters {
+              axis 0 1 0
+            }
+            device [
+              PositionSensor {
+                name "Shorten position sensor A"
+              }
+              LinearMotor {
+                name "Shorten linear motor A"
+                minPosition -1
+                maxPosition 1
+                maxForce 1600
+              }
+            ]
+            endPoint Solid {
+              children [
+                SliderJoint {
+                  jointParameters JointParameters {
+                    axis 0 1 0
+                    minStop -0.4
+                    dampingConstant 10
+                    staticFriction 0.2
+                  }
+                  device [
+                    LinearMotor {
+                      name "Spring linear motor A"
+                      maxForce 1600
+                    }
+                    PositionSensor {
+                      name "Spring position sensor A"
+                    }
+                  ]
+                  endPoint Solid {
+                    children [
+                      DEF leg Shape {
+                        appearance PBRAppearance {
+                          baseColor 0.8 1 0
+                          metalness 0
+                        }
+                        geometry Cylinder {
+                          height 1.58
+                          radius 0.02
+                        }
+                        castShadows FALSE
+                      }
+                      Transform {
+                        translation 0 -0.77 0
+                        children [
+                          DEF foot Shape {
+                            appearance PBRAppearance {
+                              baseColor 1 0 0
+                              metalness 0
+                            }
+                            geometry Sphere {
+                              radius 0.03
+                              subdivision 3
+                            }
+                            castShadows FALSE
+                          }
+                          TouchSensor {
+                            name "touch sensor A"
+                            boundingObject USE foot
+                            physics Physics {
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                    boundingObject USE leg
+                    physics Physics {
+                      density -1
+                      mass 1
+                    }
+                  }
+                }
+              ]
+              name "solid(1)"
+              boundingObject Sphere {
+                radius 0.1
+              }
+              physics Physics {
+                density 0.1
+              }
+            }
+          }
+          DEF shaft Shape {
+            appearance PBRAppearance {
+              baseColor 0 0 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.3
+              radius 0.05
+            }
+            castShadows FALSE
+          }
+        ]
+        name "LEG_A_SOLID"
+        boundingObject USE shaft
+        physics Physics {
+          density -1
+          mass 0.5
+        }
+      }
+    }
+    DEF body Shape {
+      appearance PBRAppearance {
+        baseColorMap ImageTexture {
+          url [
+            "textures/water.jpg"
+          ]
+        }
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.1
+        radius 0.6
+      }
+      castShadows FALSE
+    }
+    Hinge2Joint {
+      jointParameters HingeJointParameters {
+      }
+      jointParameters2 JointParameters {
+      }
+      device [
+        RotationalMotor {
+          name "X rotational motor B"
+          maxTorque 1000
+        }
+        PositionSensor {
+          name "X position sensor B"
+        }
+      ]
+      device2 [
+        RotationalMotor {
+          name "Z rotational motor B"
+          maxTorque 1000
+        }
+        PositionSensor {
+          name "Z position sensor B"
+        }
+      ]
+      endPoint Solid {
+        translation -3.132605147929815e-13 0.00022956194274170732 -1.2420957273116862e-20
+        children [
+          SliderJoint {
+            jointParameters JointParameters {
+              axis 0 1 0
+            }
+            device [
+              PositionSensor {
+                name "Shorten position sensor B"
+              }
+              LinearMotor {
+                name "SHorten linear motor B"
+                minPosition -1
+                maxPosition 1
+                maxForce 1600
+              }
+            ]
+            endPoint Solid {
+              children [
+                SliderJoint {
+                  jointParameters JointParameters {
+                    axis 0 1 0
+                    minStop -0.4
+                    dampingConstant 10
+                    staticFriction 0.2
+                  }
+                  device [
+                    LinearMotor {
+                      name "Spring linear motor B"
+                      maxForce 1600
+                    }
+                    PositionSensor {
+                      name "Spring position sensor B"
+                    }
+                  ]
+                  endPoint Solid {
+                    children [
+                      DEF leg Shape {
+                        appearance PBRAppearance {
+                          baseColor 1 0 0
+                          metalness 0
+                        }
+                        geometry Cylinder {
+                          height 1.58
+                          radius 0.02
+                        }
+                        castShadows FALSE
+                      }
+                      Transform {
+                        translation 0 -0.77 0
+                        children [
+                          DEF foot Shape {
+                            appearance PBRAppearance {
+                              baseColor 1 0 0
+                              metalness 0
+                            }
+                            geometry Sphere {
+                              radius 0.03
+                              subdivision 3
+                            }
+                            castShadows FALSE
+                          }
+                          TouchSensor {
+                            name "touch sensor B"
+                            boundingObject USE foot
+                            physics Physics {
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                    boundingObject USE leg
+                    physics Physics {
+                      density -1
+                      mass 1
+                    }
+                  }
+                }
+              ]
+              name "solid(1)"
+              boundingObject Sphere {
+                radius 0.1
+              }
+              physics Physics {
+                density 0.1
+              }
+            }
+          }
+          DEF shaft Shape {
+            appearance PBRAppearance {
+              baseColor 0 0 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.3
+              radius 0.05
+            }
+            castShadows FALSE
+          }
+        ]
+        name "solid 2"
+        boundingObject USE shaft
+        physics Physics {
+          density -1
+          mass 0.5
+        }
+      }
+    }
+    InertialUnit {
+      boundingObject USE body
+      physics Physics {
+        density -1
+        mass 0.5
+      }
+    }
+  ]
+  boundingObject USE body
+  physics Physics {
+    density -1
+    mass 15
+  }
+  controller "my_controller_2_leg"
+}
+Robot {
+  translation 1 2.49 -0.86
+  children [
+    DEF externBody Shape {
+      geometry Sphere {
+        radius 0.1
+      }
+      castShadows FALSE
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        position 0.2
+      }
+      endPoint Solid {
+        translation 0 -1.4701000000000148 -0.29800400000000327
+        rotation 1 0 0 0.1999999999999989
+        children [
+          DEF externBall Shape {
+            appearance PBRAppearance {
+              roughness 0.5
+            }
+            geometry Sphere {
+              radius 0.2
+              subdivision 3
+            }
+            castShadows FALSE
+          }
+          Transform {
+            translation 0 0.75 0
+            children [
+              Shape {
+                appearance PBRAppearance {
+                  baseColor 1 0 0
+                  roughness 0.5
+                  metalness 0
+                  IBLStrength 2
+                }
+                geometry Cylinder {
+                  height 1.5
+                  radius 0.01
+                }
+                castShadows FALSE
+              }
+            ]
+          }
+        ]
+        boundingObject USE externBall
+        physics Physics {
+          density -1
+          mass 2
+        }
+      }
+    }
+  ]
+  name "robot(1)"
+  boundingObject USE externBody
+}
