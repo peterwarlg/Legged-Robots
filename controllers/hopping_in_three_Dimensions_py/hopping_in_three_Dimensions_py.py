@@ -11,11 +11,11 @@ if __name__ == '__main__':
     robot_status = HipRobot()
 
     while robot_status.robot.step(robot_status.time_step) != -1:
-        # robot_status.X_motor.setPosition(angle)
-        # val = robot_status.X_motor_position_sensor.getValue()
+        # robot_status.X_motor_A.setPosition(angle)
+        # val = robot_status.X_motor_position_sensor_A.getValue()
         # angle = angle + 0.001
         #
-        # robot_status.Z_motor.setPosition(0.5)
+        # robot_status.Z_motor_A.setPosition(0.5)
         robot_status.update_robot_state()
         robot_status.robot_control()
         # print(robot_status.x_dot, robot_status.z_dot)

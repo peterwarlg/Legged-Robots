@@ -42,8 +42,6 @@ Robot {
       device [
         RotationalMotor {
           name "X rotational motor A"
-          minPosition -0.5
-          maxPosition 0.5
           maxTorque 1000
         }
         PositionSensor {
@@ -62,114 +60,78 @@ Robot {
       endPoint Solid {
         translation -3.132605147929815e-13 0.00022956194274170732 -1.2420957273116862e-20
         children [
+          DEF shaft Shape {
+            appearance PBRAppearance {
+              baseColor 0 0 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.3
+              radius 0.05
+            }
+            castShadows FALSE
+          }
           SliderJoint {
             jointParameters JointParameters {
               axis 0 1 0
+              minStop -0.4
+              dampingConstant 10
+              staticFriction 0.2
             }
             device [
-              PositionSensor {
-                name "Shorten position sensor A"
-              }
               LinearMotor {
-                name "Shorten linear motor A"
-                maxForce 1000
+                name "Spring linear motor A"
+                maxForce 1600
+              }
+              PositionSensor {
+                name "Spring position sensor A"
               }
             ]
             endPoint Solid {
               children [
-                DEF shaft Shape {
+                DEF leg Shape {
                   appearance PBRAppearance {
-                    baseColor 0 0 1
+                    baseColor 1 1 0
                     metalness 0
                   }
                   geometry Cylinder {
-                    height 0.3
-                    radius 0.05
+                    height 1.58
+                    radius 0.02
                   }
                   castShadows FALSE
                 }
-                SliderJoint {
-                  jointParameters JointParameters {
-                    axis 0 1 0
-                    minStop -0.4
-                    dampingConstant 10
-                    staticFriction 0.2
-                  }
-                  device [
-                    LinearMotor {
-                      name "Spring linear motor A"
-                      maxForce 1600
+                Transform {
+                  translation 0 -0.77 0
+                  children [
+                    DEF foot Shape {
+                      appearance PBRAppearance {
+                        baseColor 1 0 0
+                        metalness 0
+                      }
+                      geometry Sphere {
+                        radius 0.03
+                        subdivision 3
+                      }
+                      castShadows FALSE
                     }
-                    PositionSensor {
-                      name "Spring position sensor A"
+                    TouchSensor {
+                      name "touch sensor A"
+                      boundingObject USE foot
+                      physics Physics {
+                      }
                     }
                   ]
-                  endPoint Solid {
-                    children [
-                      DEF leg Shape {
-                        appearance PBRAppearance {
-                          baseColor 1 1 0
-                          metalness 0
-                        }
-                        geometry Cylinder {
-                          height 1.58
-                          radius 0.02
-                        }
-                        castShadows FALSE
-                      }
-                      Transform {
-                        translation 0 -0.77 0
-                        children [
-                          DEF foot Shape {
-                            appearance PBRAppearance {
-                              baseColor 1 0 0
-                              metalness 0
-                            }
-                            geometry Sphere {
-                              radius 0.03
-                              subdivision 3
-                            }
-                            castShadows FALSE
-                          }
-                          TouchSensor {
-                            name "touch sensor A"
-                            boundingObject USE foot
-                            physics Physics {
-                            }
-                          }
-                        ]
-                      }
-                    ]
-                    boundingObject USE leg
-                    physics Physics {
-                      density -1
-                      mass 1
-                    }
-                  }
                 }
               ]
-              name "move a solid"
-              boundingObject Sphere {
-                radius 0.01
-              }
+              boundingObject USE leg
               physics Physics {
                 density -1
-                mass 0.001
+                mass 1
               }
             }
           }
         ]
-        boundingObject DEF shaft Shape {
-          appearance PBRAppearance {
-            baseColor 0 0 1
-            metalness 0
-          }
-          geometry Cylinder {
-            height 0.3
-            radius 0.05
-          }
-          castShadows FALSE
-        }
+        boundingObject USE shaft
         physics Physics {
           density -1
           mass 0.5
@@ -192,7 +154,7 @@ Robot {
   controller "my_controller_2_leg"
 }
 Robot {
-  translation 4.95 2.49 -0.86
+  translation 0 2.49 -0.86
   children [
     DEF externBody Shape {
       geometry Sphere {

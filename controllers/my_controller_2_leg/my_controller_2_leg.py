@@ -24,7 +24,8 @@ def updateRobotState():
     robot_status.system_ms += TIME_STEP
 
     #  足底传感器更新
-    robot_status.is_foot_touching_flg = devices.is_foot_touching()
+    robot_status.is_foot_touching_flg_A = devices.is_foot_touching()
+    robot_status.is_foot_touching_flg_B = devices.is_foot_touching()
 
     # IMU，IMU导数，以及旋转矩阵更新
     now_IMU: EulerAnglesRPY = devices.get_IMU_Angle()
@@ -48,11 +49,12 @@ def updateRobotState():
     robot_status.rotation_matrix_H_under_B = np.transpose(copy.deepcopy(robot_status.rotation_matrix_B_under_H))
 
     # 弹簧长度及其导数更新
-    now_r: float = devices.get_spring_length()
-    now_r_dot = (now_r - robot_status.joint_space_lxz.r) / (0.001 * TIME_STEP)
-    robot_status.joint_space_lxz.r = now_r
+    print(devices.get_spring_length(), devices.get_shorten_length_A())
+    now_r_A: float = devices.get_spring_length() - devices.get_shorten_length_A()
+    now_r_A_dot = (now_r_A - robot_status.joint_space_lxz.r) / (0.001 * TIME_STEP)
+    robot_status.joint_space_lxz.r = now_r_A
     robot_status.joint_space_lxz_dot.r = robot_status.joint_space_lxz_dot.r * (
-            1.0 - ALPHA) + now_r_dot * ALPHA  # 一阶低通滤波器
+            1.0 - ALPHA) + now_r_A_dot * ALPHA  # 一阶低通滤波器
 
     # X、Z关节角度更新*/
     now_X_motor_angle: float = devices.get_X_motor_angle()
@@ -111,16 +113,21 @@ def update_xz_dot():
 
 def update_last_Ts():
     global robot_status
-    if not robot_status.pre_is_foot_touching_flg and robot_status.is_foot_touching_flg:
+    if not robot_status.pre_is_foot_touching_flg_A and robot_status.is_foot_touching_flg_A:
         robot_status.stance_start_ms = robot_status.system_ms
-    if robot_status.pre_is_foot_touching_flg and not robot_status.is_foot_touching_flg:
+    if robot_status.pre_is_foot_touching_flg_A and not robot_status.is_foot_touching_flg_A:
         stance_end_ms = robot_status.system_ms
         robot_status.Ts = 0.001 * float(stance_end_ms - robot_status.stance_start_ms)
-    robot_status.pre_is_foot_touching_flg = robot_status.is_foot_touching_flg
+    robot_status.pre_is_foot_touching_flg_A = robot_status.is_foot_touching_flg_A
 
 
 def updateRobotStateMachine():
     global robot_status
+    print(robot_status.robot_state)
+    # if not robot_status.is_foot_touching_flg_A:
+    #     robot_status.robot_state = FLIGHT
+    #     return
+
     if robot_status.robot_state == LOADING:
         if robot_status.joint_space_lxz.r < robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.robot_state = COMPRESSION
@@ -134,11 +141,11 @@ def updateRobotStateMachine():
             robot_status.robot_state = UNLOADING
         return
     elif robot_status.robot_state == UNLOADING:
-        if not robot_status.is_foot_touching_flg:
+        if not robot_status.is_foot_touching_flg_A:
             robot_status.robot_state = FLIGHT
         return
     elif robot_status.robot_state == FLIGHT:
-        if robot_status.is_foot_touching_flg:
+        if robot_status.is_foot_touching_flg_A:
             robot_status.robot_state = LOADING
         return
     else:
@@ -160,11 +167,11 @@ def updateRobotStateMachine2():
             robot_status.robot_state_2 = UNLOADING_A
         return
     elif robot_status.robot_state_2 == UNLOADING_A:
-        if not robot_status.is_foot_touching_flg:
+        if not robot_status.is_foot_touching_flg_A:
             robot_status.robot_state_2 = FLIGHT_A
         return
     elif robot_status.robot_state_2 == FLIGHT_A:
-        if robot_status.is_foot_touching_flg_2:
+        if robot_status.is_foot_touching_flg_B:
             robot_status.robot_state_2 = LOADING_B
         return
     # B
@@ -181,7 +188,7 @@ def updateRobotStateMachine2():
             robot_status.robot_state_2 = UNLOADING_B
         return
     elif robot_status.robot_state_2 == UNLOADING_B:
-        if not robot_status.is_foot_touching_flg_2:
+        if not robot_status.is_foot_touching_flg_B:
             robot_status.robot_state_2 = FLIGHT_B
         return
     else:
@@ -189,12 +196,11 @@ def updateRobotStateMachine2():
 
 
 def robot_control():
-    devices.linear_motor_a.setPosition(-0.1)
     dx = robot_status.spring_normal_length - robot_status.joint_space_lxz.r  # 求压缩量
     f_spring = dx * robot_status.k_spring
     if robot_status.robot_state == THRUST:
         f_spring += robot_status.F_thrust
-    devices.set_spring_force(devices.spring_motor, f_spring)
+    devices.set_spring_force(devices.spring_motor_A, f_spring)
 
     # 控制臀部扭矩力 LOADING和UNLOADING时候，扭矩为0
     if (robot_status.robot_state == LOADING) or (robot_status.robot_state == UNLOADING):
@@ -236,8 +242,12 @@ def robot_control():
         z_angle_dot = robot_status.joint_space_lxz_dot.Z_motor_angle
         Tx = -robot_status.k_leg_p * (x_angle - x_angle_desire) - robot_status.k_leg_v * x_angle_dot
         Tz = -robot_status.k_leg_p * (z_angle - z_angle_desire) - robot_status.k_leg_v * z_angle_dot
+
         devices.set_X_torque(Tx)
         devices.set_Z_torque(Tz)
+        # devices.X_motor_A.setPosition(x_angle_desire / 180 * math.pi)
+        # devices.Z_motor_A.setPosition(z_angle_desire / 180 * math.pi)
+
 
 def robot_control_2():
     dx = robot_status.spring_normal_length - robot_status.joint_space_lxz.r  # 求压缩量
@@ -246,12 +256,11 @@ def robot_control_2():
     f_spring_2 = dx2 * robot_status.k_spring
     if robot_status.robot_state_2 == THRUST_A:
         f_spring += robot_status.F_thrust
-    devices.set_spring_force(devices.spring_motor, f_spring)
+    devices.set_spring_force(devices.spring_motor_A, f_spring)
 
     if robot_status.robot_state_2 == FLIGHT_B:
         f_spring_2 += robot_status.F_thrust
-    devices.set_spring_force(devices.spring_motor_2, f_spring_2)
-
+    devices.set_spring_force(devices.spring_motor_B, f_spring_2)
 
     # 控制臀部扭矩力 LOADING和UNLOADING时候，扭矩为0
     if (robot_status.robot_state == LOADING) or (robot_status.robot_state == UNLOADING):
@@ -262,8 +271,7 @@ def robot_control_2():
         # zero hip torque A
         devices.set_X_torque(0.0)
         devices.set_Z_torque(0.0)
-        #shorted B
-
+        # shorted B
 
     # COMPRESSION和THRUST时候，臀部电机控制身体姿态
     if (robot_status.robot_state == COMPRESSION) or (robot_status.robot_state == THRUST):
@@ -304,12 +312,14 @@ def robot_control_2():
         devices.set_Z_torque(Tz)
     pass
 
+
 # Main loop:
 # - perform simulation steps until Webots is stopping the controller
 while robot.step(TIME_STEP) != -1:
     # Read the sensors:
     # Enter here functions to read sensor data, like:
     #  val = ds.getValue()
+    devices.shorten_motor_A.setPosition(robot_status.offset_A)
     updateRobotState()
     robot_control()
     # print(robot_status.Point_hat_B_desire_a)
