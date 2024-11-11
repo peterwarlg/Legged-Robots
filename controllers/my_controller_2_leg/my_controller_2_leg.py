@@ -28,33 +28,37 @@ def updateRobotState():
     robot_status.is_foot_touching_flg_B = devices.is_foot_touching()
 
     # IMU，IMU导数，以及旋转矩阵更新
-    now_IMU: EulerAnglesRPY = devices.get_IMU_Angle()
-    now_IMU_dot: EulerAnglesRPY = EulerAnglesRPY()
+    imu_now: EulerAnglesRPY = devices.get_IMU_Angle()
+    imu_dot_now: EulerAnglesRPY = EulerAnglesRPY()
 
-    now_IMU_dot.roll = (now_IMU.roll - robot_status.euler_angles.roll) / (0.001 * TIME_STEP)
-    now_IMU_dot.pitch = (now_IMU.pitch - robot_status.euler_angles.pitch) / (0.001 * TIME_STEP)
-    now_IMU_dot.yaw = (now_IMU.yaw - robot_status.euler_angles.yaw) / (0.001 * TIME_STEP)
+    imu_dot_now.roll = (imu_now.roll - robot_status.euler_angles.roll) / (0.001 * TIME_STEP)
+    imu_dot_now.pitch = (imu_now.pitch - robot_status.euler_angles.pitch) / (0.001 * TIME_STEP)
+    imu_dot_now.yaw = (imu_now.yaw - robot_status.euler_angles.yaw) / (0.001 * TIME_STEP)
 
-    robot_status.euler_angles = now_IMU
+    robot_status.euler_angles = imu_now
     robot_status.euler_angles_dot.roll = \
-        robot_status.euler_angles_dot.roll * (1.0 - ALPHA) + now_IMU_dot.roll * ALPHA
+        robot_status.euler_angles_dot.roll * (1.0 - ALPHA) + imu_dot_now.roll * ALPHA
     robot_status.euler_angles_dot.pitch = \
-        robot_status.euler_angles_dot.pitch * (1.0 - ALPHA) + now_IMU_dot.pitch * ALPHA
+        robot_status.euler_angles_dot.pitch * (1.0 - ALPHA) + imu_dot_now.pitch * ALPHA
     robot_status.euler_angles_dot.yaw = \
-        robot_status.euler_angles_dot.yaw * (1.0 - ALPHA) + now_IMU_dot.yaw * ALPHA
+        robot_status.euler_angles_dot.yaw * (1.0 - ALPHA) + imu_dot_now.yaw * ALPHA
 
     # 更新旋转矩阵
-    r = R.from_euler('xzy', [now_IMU.roll, now_IMU.pitch, now_IMU.yaw], degrees=True)
+    r = R.from_euler('xzy', [imu_now.roll, imu_now.pitch, imu_now.yaw], degrees=True)
     robot_status.rotation_matrix_B_under_H = np.array(copy.deepcopy(r.as_matrix()))
     robot_status.rotation_matrix_H_under_B = np.transpose(copy.deepcopy(robot_status.rotation_matrix_B_under_H))
 
     # 弹簧长度及其导数更新
-    print(devices.get_spring_length(), devices.get_shorten_length_A())
+    # print(devices.get_spring_length(), devices.get_shorten_length_A())
+    robot_status.joint_space_lxz.spring_len = devices.get_spring_length()
+
     now_r_A: float = devices.get_spring_length() - devices.get_shorten_length_A()
     now_r_A_dot = (now_r_A - robot_status.joint_space_lxz.r) / (0.001 * TIME_STEP)
+
     robot_status.joint_space_lxz.r = now_r_A
     robot_status.joint_space_lxz_dot.r = robot_status.joint_space_lxz_dot.r * (
             1.0 - ALPHA) + now_r_A_dot * ALPHA  # 一阶低通滤波器
+
 
     # X、Z关节角度更新*/
     now_X_motor_angle: float = devices.get_X_motor_angle()
@@ -129,7 +133,7 @@ def updateRobotStateMachine():
     #     return
 
     if robot_status.robot_state == LOADING:
-        if robot_status.joint_space_lxz.r < robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.joint_space_lxz.spring_len < robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.robot_state = COMPRESSION
         return
     elif robot_status.robot_state == COMPRESSION:
@@ -137,7 +141,7 @@ def updateRobotStateMachine():
             robot_status.robot_state = THRUST
             return
     elif robot_status.robot_state == THRUST:
-        if robot_status.joint_space_lxz.r > robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.joint_space_lxz.spring_len > robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.robot_state = UNLOADING
         return
     elif robot_status.robot_state == UNLOADING:
@@ -155,7 +159,7 @@ def updateRobotStateMachine():
 def updateRobotStateMachine2():
     global robot_status
     if robot_status.robot_state_2 == LOADING_A:
-        if robot_status.joint_space_lxz.r < robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.joint_space_lxz.spring_len < robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.robot_state_2 = COMPRESSION_A
         return
     elif robot_status.robot_state_2 == COMPRESSION_A:
@@ -163,7 +167,7 @@ def updateRobotStateMachine2():
             robot_status.robot_state_2 = THRUST_A
             return
     elif robot_status.robot_state_2 == THRUST_A:
-        if robot_status.joint_space_lxz.r > robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.joint_space_lxz.spring_len > robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.robot_state_2 = UNLOADING_A
         return
     elif robot_status.robot_state_2 == UNLOADING_A:
@@ -196,7 +200,7 @@ def updateRobotStateMachine2():
 
 
 def robot_control():
-    dx = robot_status.spring_normal_length - robot_status.joint_space_lxz.r  # 求压缩量
+    dx = robot_status.spring_normal_length - robot_status.joint_space_lxz.spring_len  # 求压缩量
     f_spring = dx * robot_status.k_spring
     if robot_status.robot_state == THRUST:
         f_spring += robot_status.F_thrust
@@ -218,6 +222,7 @@ def robot_control():
 
     #  FLIGHT的时候，控制足底移动到落足点
     if robot_status.robot_state == FLIGHT:
+        print(robot_status.joint_space_lxz.r, robot_status.joint_space_lxz.spring_len)
         r = robot_status.joint_space_lxz.r
         x_f = robot_status.x_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
                 robot_status.x_dot - robot_status.x_dot_desire)

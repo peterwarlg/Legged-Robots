@@ -28,10 +28,11 @@ class EulerAnglesRPY:
 
 
 class JointSpaceLXZ:
-    def __init__(self, r=0.0, p=0.0, y=0.0):
+    def __init__(self, r=0.0, p=0.0, y=0.0, l=0.0):
         self.r = r
         self.X_motor_angle = p
         self.Z_motor_angle = y
+        self.spring_len = l
 
 
 class RobotStatus:
@@ -48,8 +49,6 @@ class RobotStatus:
         self.k_pose_p: float = 0.8  # 姿态控制时的kp
         self.k_pose_v: float = 0.025  # 姿态控制时的kv
 
-
-
         # 机器人状态
         # euler angle
         self.euler_angles = EulerAnglesRPY()
@@ -63,10 +62,10 @@ class RobotStatus:
         self.rotation_matrix_H_under_B_2: np.ndarray = np.eye(3, dtype=float)  # world->body
 
         # r x z
-        self.joint_space_lxz = JointSpaceLXZ(0.8, 0.0, 0.0)
-        self.joint_space_lxz_dot = JointSpaceLXZ(0.0, 0.0, 0.0)
-        self.joint_space_lxz_2 = JointSpaceLXZ(0.8, 0.0, 0.0)
-        self.joint_space_lxz_dot_2 = JointSpaceLXZ(0.0, 0.0, 0.0)
+        self.joint_space_lxz = JointSpaceLXZ(0.8, 0.0, 0.0, 0.0)
+        self.joint_space_lxz_dot = JointSpaceLXZ(0.0, 0.0, 0.0, 0.0)
+        self.joint_space_lxz_2 = JointSpaceLXZ(0.8, 0.0, 0.0, 0.0)
+        self.joint_space_lxz_dot_2 = JointSpaceLXZ(0.0, 0.0, 0.0, 0.0)
 
         # A: x y z
         self.Point_hat_B: np.ndarray = np.array([0.0, 0.0, 0.0])
@@ -84,7 +83,7 @@ class RobotStatus:
         self.Ts: float = 0.0
         self.x_dot: float = 0.0
         self.z_dot: float = 0.0
-        self.x_dot_desire: float = 0.0
+        self.x_dot_desire: float = -0.2
         self.z_dot_desire: float = 0.0
 
         self.system_ms: int = 0
@@ -98,9 +97,8 @@ class RobotStatus:
         self.pre_x_dot = 0.0
         self.pre_z_dot = 0.0
 
-        # 腿缩短量 正数向上
+        # 腿缩短量 正数时，腿向上移动，机身向下偏置
         self.offset_A = 0.1
-        self.leg_b_offset = 0.0
 
 
 class Devices:
