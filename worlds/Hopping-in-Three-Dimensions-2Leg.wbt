@@ -112,7 +112,7 @@ Robot {
                       }
                       DEF leg Shape {
                         appearance PBRAppearance {
-                          baseColor 1 1 0
+                          baseColor 1 0.792157 0
                           metalness 0
                         }
                         geometry Cylinder {
@@ -126,7 +126,7 @@ Robot {
                         children [
                           DEF foot Shape {
                             appearance PBRAppearance {
-                              baseColor 1 0 0
+                              baseColor 1 0.792157 0
                               metalness 0
                             }
                             geometry Sphere {
@@ -332,7 +332,7 @@ Robot {
                       }
                       DEF leg Shape {
                         appearance PBRAppearance {
-                          baseColor 1 1 0
+                          baseColor 0.666667 0.02 0.02
                           metalness 0
                         }
                         geometry Cylinder {

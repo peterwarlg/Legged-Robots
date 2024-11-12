@@ -24,8 +24,8 @@ def updateRobotState():
     robot_status.system_ms += TIME_STEP
 
     #  足底传感器更新
-    robot_status.is_foot_touching_flg_A = devices.is_foot_touching()
-    robot_status.is_foot_touching_flg_B = devices.is_foot_touching()
+    robot_status.is_foot_touching_flg_A = devices.is_foot_touching_A()
+    robot_status.is_foot_touching_flg_B = devices.is_foot_touching_A()
 
     # IMU，IMU导数，以及旋转矩阵更新
     imu_now: EulerAnglesRPY = devices.get_IMU_Angle()
@@ -49,10 +49,9 @@ def updateRobotState():
     robot_status.rotation_matrix_H_under_B = np.transpose(copy.deepcopy(robot_status.rotation_matrix_B_under_H))
 
     # 弹簧长度及其导数更新
-    # print(devices.get_spring_length(), devices.get_shorten_length_A())
-    robot_status.joint_space_lxz.spring_len = devices.get_spring_length()
+    robot_status.joint_space_lxz.spring_len = devices.get_spring_length_A()
 
-    now_r_A: float = devices.get_spring_length() - devices.get_shorten_length_A()
+    now_r_A: float = devices.get_spring_length_A() - devices.get_shorten_length_A()
     now_r_A_dot = (now_r_A - robot_status.joint_space_lxz.r) / (0.001 * TIME_STEP)
 
     robot_status.joint_space_lxz.r = now_r_A
@@ -61,14 +60,14 @@ def updateRobotState():
 
 
     # X、Z关节角度更新*/
-    now_X_motor_angle: float = devices.get_X_motor_angle()
+    now_X_motor_angle: float = devices.get_X_motor_angle_A()
     now_X_motor_angle_dot: float = (now_X_motor_angle - robot_status.joint_space_lxz.X_motor_angle) / (
             0.001 * TIME_STEP)
     robot_status.joint_space_lxz.X_motor_angle = now_X_motor_angle
     robot_status.joint_space_lxz_dot.X_motor_angle = robot_status.joint_space_lxz_dot.X_motor_angle * (
             1.0 - ALPHA) + now_X_motor_angle_dot * ALPHA  # 一阶低通滤波器
 
-    now_Z_motor_angle = devices.get_Z_motor_angle()
+    now_Z_motor_angle = devices.get_Z_motor_angle_A()
     now_Z_motor_angle_dot = (now_Z_motor_angle - robot_status.joint_space_lxz.Z_motor_angle) / (0.001 * TIME_STEP)
     robot_status.joint_space_lxz.Z_motor_angle = now_Z_motor_angle
     robot_status.joint_space_lxz_dot.Z_motor_angle = robot_status.joint_space_lxz_dot.Z_motor_angle * (
@@ -210,8 +209,8 @@ def robot_control():
 
     # 控制臀部扭矩力 LOADING和UNLOADING时候，扭矩为0
     if (robot_status.robot_state == LOADING) or (robot_status.robot_state == UNLOADING):
-        devices.set_X_torque(0.0)
-        devices.set_Z_torque(0.0)
+        devices.set_X_torque_A(0.0)
+        devices.set_Z_torque_A(0.0)
 
     # COMPRESSION和THRUST时候，臀部电机控制身体姿态
     if (robot_status.robot_state == COMPRESSION) or (robot_status.robot_state == THRUST):
@@ -219,8 +218,8 @@ def robot_control():
                 -robot_status.k_pose_p * robot_status.euler_angles.roll - robot_status.k_pose_v * robot_status.euler_angles_dot.roll)
         Tz = -(
                 -robot_status.k_pose_p * robot_status.euler_angles.pitch - robot_status.k_pose_v * robot_status.euler_angles_dot.pitch)
-        devices.set_X_torque(Tx)
-        devices.set_Z_torque(Tz)
+        devices.set_X_torque_A(Tx)
+        devices.set_Z_torque_A(Tz)
 
     #  FLIGHT的时候，控制足底移动到落足点
     if robot_status.robot_state == FLIGHT:
@@ -250,8 +249,8 @@ def robot_control():
         Tx = -robot_status.k_leg_p * (x_angle - x_angle_desire) - robot_status.k_leg_v * x_angle_dot
         Tz = -robot_status.k_leg_p * (z_angle - z_angle_desire) - robot_status.k_leg_v * z_angle_dot
 
-        devices.set_X_torque(Tx)
-        devices.set_Z_torque(Tz)
+        devices.set_X_torque_A(Tx)
+        devices.set_Z_torque_A(Tz)
         # devices.X_motor_A.setPosition(x_angle_desire / 180 * math.pi)
         # devices.Z_motor_A.setPosition(z_angle_desire / 180 * math.pi)
 
@@ -271,13 +270,13 @@ def robot_control_2():
 
     # 控制臀部扭矩力 LOADING和UNLOADING时候，扭矩为0
     if (robot_status.robot_state == LOADING) or (robot_status.robot_state == UNLOADING):
-        devices.set_X_torque(0.0)
-        devices.set_Z_torque(0.0)
+        devices.set_X_torque_A(0.0)
+        devices.set_Z_torque_A(0.0)
 
     if robot_status.robot_state_2 == LOADING_A:
         # zero hip torque A
-        devices.set_X_torque(0.0)
-        devices.set_Z_torque(0.0)
+        devices.set_X_torque_A(0.0)
+        devices.set_Z_torque_A(0.0)
         # shorted B
 
     # COMPRESSION和THRUST时候，臀部电机控制身体姿态
@@ -286,8 +285,8 @@ def robot_control_2():
                 -robot_status.k_pose_p * robot_status.euler_angles.roll - robot_status.k_pose_v * robot_status.euler_angles_dot.roll)
         Tz = -(
                 -robot_status.k_pose_p * robot_status.euler_angles.pitch - robot_status.k_pose_v * robot_status.euler_angles_dot.pitch)
-        devices.set_X_torque(Tx)
-        devices.set_Z_torque(Tz)
+        devices.set_X_torque_A(Tx)
+        devices.set_Z_torque_A(Tz)
 
     #  FLIGHT的时候，控制足底移动到落足点
     if robot_status.robot_state == FLIGHT:
@@ -315,8 +314,8 @@ def robot_control_2():
         z_angle_dot = robot_status.joint_space_lxz_dot.Z_motor_angle
         Tx = -robot_status.k_leg_p * (x_angle - x_angle_desire) - robot_status.k_leg_v * x_angle_dot
         Tz = -robot_status.k_leg_p * (z_angle - z_angle_desire) - robot_status.k_leg_v * z_angle_dot
-        devices.set_X_torque(Tx)
-        devices.set_Z_torque(Tz)
+        devices.set_X_torque_A(Tx)
+        devices.set_Z_torque_A(Tz)
     pass
 
 

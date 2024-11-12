@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from controller import Robot, Motor, TouchSensor, PositionSensor, InertialUnit,GPS
+from controller import Robot, Motor, TouchSensor, PositionSensor, InertialUnit, GPS
 
 LOADING = 0x00  # 落地
 COMPRESSION = 0x01  # 压缩腿
@@ -99,12 +99,14 @@ class RobotStatus:
 
         # 腿缩短量 正数时，腿向上移动，机身向下偏置
         self.offset_A = 0.0
+        self.offset_B = 0.0
 
 
 class Devices:
     def __init__(self, _robot: Robot) -> None:
         self.IMU: InertialUnit = _robot.getInertialUnit("inertial unit")
 
+        # A leg的硬件注册
         self.spring_motor_A: Motor = _robot.getMotor("Spring linear motor A")
         self.spring_pos_sensor_A: PositionSensor = _robot.getPositionSensor("Spring position sensor A")
         self.touch_sensor_A: TouchSensor = _robot.getTouchSensor("touch sensor A")
@@ -116,62 +118,61 @@ class Devices:
         self.shorten_motor_A: Motor = _robot.getMotor('Shorten linear motor A')
         self.shorten_position_sensor_A: PositionSensor = _robot.getPositionSensor("Shorten position sensor A")
 
-        # self.spring_motor_B: Motor = _robot.getMotor("Spring linear motor B")
-        # self.spring_pos_sensor_B: PositionSensor = _robot.getPositionSensor("Spring position sensor B")
-        # self.touch_sensor_B: TouchSensor = _robot.getTouchSensor("touch sensor B")
-        # self.X_motor_B: Motor = _robot.getMotor("X rotational motor B")
-        # self.X_motor_position_sensor_B: PositionSensor = _robot.getPositionSensor("X position sensor B")
-        # self.Z_motor_B: Motor = _robot.getMotor("Z rotational motor B")
-        # self.Z_motor_position_sensor_B: PositionSensor = _robot.getPositionSensor("Z position sensor B")
-
+        # B leg的硬件注册
+        self.spring_motor_B: Motor = _robot.getMotor("Spring linear motor B")
+        self.spring_pos_sensor_B: PositionSensor = _robot.getPositionSensor("Spring position sensor B")
+        self.touch_sensor_B: TouchSensor = _robot.getTouchSensor("touch sensor B")
+        self.X_motor_B: Motor = _robot.getMotor("X rotational motor B")
+        self.X_motor_position_sensor_B: PositionSensor = _robot.getPositionSensor("X position sensor B")
+        self.Z_motor_B: Motor = _robot.getMotor("Z rotational motor B")
+        self.Z_motor_position_sensor_B: PositionSensor = _robot.getPositionSensor("Z position sensor B")
         # setposition 朝上为+
-        # self.shorten_motor_A: Motor = _robot.getMotor('Shorten linear motor A')
-        # self.shorten_motor_B: Motor = _robot.getMotor('Shorten linear motor B')
-
-        # self.shorten_position_sensor_B: PositionSensor = _robot.getPositionSensor("Shorten position sensor B")
+        self.shorten_motor_B: Motor = _robot.getMotor('Shorten linear motor B')
+        self.shorten_position_sensor_B: PositionSensor = _robot.getPositionSensor("Shorten position sensor B")
 
         time_step = int(_robot.getBasicTimeStep())
 
         self.IMU.enable(time_step)
-
+        # Leg A激活
         self.spring_pos_sensor_A.enable(time_step)
         self.X_motor_position_sensor_A.enable(time_step)
         self.Z_motor_position_sensor_A.enable(time_step)
         self.touch_sensor_A.enable(time_step)
         self.shorten_position_sensor_A.enable(time_step)
-        # self.spring_pos_sensor_B.enable(time_step)
-        # self.X_motor_position_sensor_B.enable(time_step)
-        # self.Z_motor_position_sensor_B.enable(time_step)
-        # self.touch_sensor_B.enable(time_step)
+        # Leg B激活
+        self.spring_pos_sensor_B.enable(time_step)
+        self.X_motor_position_sensor_B.enable(time_step)
+        self.Z_motor_position_sensor_B.enable(time_step)
+        self.touch_sensor_B.enable(time_step)
+        self.shorten_position_sensor_B.enable(time_step)
 
-        # self.shorten_position_sensor_B.enable(time_step)
 
     def set_spring_force(self, spring_motor: Motor, force: float):
         spring_motor.setForce(-force)
         # self.spring_motor_A.setForce(-force)
 
-    def get_spring_length(self) -> float:
+    def get_spring_length_A(self) -> float:
         l: float = self.spring_pos_sensor_A.getValue()
         return 0.8 - l
 
-    # def get_spring_length_2(self) -> float:
-    #     l: float = self.spring_pos_sensor_B.getValue()
-    #     return 0.8 - l
+    def get_spring_length_B(self) -> float:
+        l: float = self.spring_pos_sensor_B.getValue()
+        return 0.8 - l
 
-    def set_X_torque(self, torque):
+    def set_X_torque_A(self, torque):
         self.X_motor_A.setTorque(torque)
 
     # def set_X_torque_2(self, torque):
     #     self.X_motor_B.setTorque(torque)
 
-    def set_Z_torque(self, torque):
+    def set_Z_torque_A(self, torque):
         self.Z_motor_A.setTorque(torque)
 
     #
     # def set_Z_torque_2(self, torque):
     #     self.Z_motor_B.setTorque(torque)
 
-    def get_X_motor_angle(self) -> float:
+    def get_X_motor_angle_A(self) -> float:
         angle: float = self.X_motor_position_sensor_A.getValue()
         return angle * 180.0 / math.pi
 
@@ -179,7 +180,7 @@ class Devices:
     #     angle: float = self.X_motor_position_sensor_B.getValue()
     #     return angle * 180.0 / math.pi
 
-    def get_Z_motor_angle(self) -> float:
+    def get_Z_motor_angle_A(self) -> float:
         angle: float = self.Z_motor_position_sensor_A.getValue()
         return angle * 180.0 / math.pi
 
@@ -187,7 +188,7 @@ class Devices:
     #     angle: float = self.Z_motor_position_sensor_B.getValue()
     #     return angle * 180.0 / math.pi
 
-    def is_foot_touching(self) -> bool:
+    def is_foot_touching_A(self) -> bool:
         return self.touch_sensor_A.getValue()
 
     # def is_foot_touching_2(self) -> bool:
@@ -202,16 +203,16 @@ class Devices:
         return euler_angles_rpy
 
     def set_spring_position_A(self, position):
-        err = position - self.get_spring_length()
+        err = position - self.get_spring_length_A()
 
-    def set_shorten_length_A(self, len: float):
-        self.shorten_motor_A.setPosition(len)
+    def set_shorten_length_A(self, length: float):
+        self.shorten_motor_A.setPosition(length)
 
     def get_shorten_length_A(self) -> float:
         return self.shorten_position_sensor_A.getValue()
 
-    # def set_shorten_length_B(self, len: float):
-    #     self.shorten_motor_B.setPosition(len)
+    # def set_shorten_length_B(self, length: float):
+    #     self.shorten_motor_B.setPosition(length)
     #
     # def get_shorten_length_B(self) -> float:
     #     return self.shorten_position_sensor_B.getValue()
