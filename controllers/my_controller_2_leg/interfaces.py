@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from controller import Robot, Motor, TouchSensor, PositionSensor, InertialUnit
+from controller import Robot, Motor, TouchSensor, PositionSensor, InertialUnit,GPS
 
 LOADING = 0x00  # 落地
 COMPRESSION = 0x01  # 压缩腿
@@ -98,7 +98,7 @@ class RobotStatus:
         self.pre_z_dot = 0.0
 
         # 腿缩短量 正数时，腿向上移动，机身向下偏置
-        self.offset_A = 0.1
+        self.offset_A = 0.0
 
 
 class Devices:

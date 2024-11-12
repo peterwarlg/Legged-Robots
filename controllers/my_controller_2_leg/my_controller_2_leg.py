@@ -113,6 +113,8 @@ def update_xz_dot():
     if (robot_status.robot_state == COMPRESSION) or (robot_status.robot_state == THRUST):
         robot_status.x_dot = now_x_dot
         robot_status.z_dot = now_z_dot
+        # robot_status.x_dot = devices.gps.getValues()[0]
+        # robot_status.z_dot = devices.gps.getValues()[2]
 
 
 def update_last_Ts():
@@ -127,7 +129,7 @@ def update_last_Ts():
 
 def updateRobotStateMachine():
     global robot_status
-    print(robot_status.robot_state)
+    # print(robot_status.robot_state)
     # if not robot_status.is_foot_touching_flg_A:
     #     robot_status.robot_state = FLIGHT
     #     return
@@ -222,7 +224,7 @@ def robot_control():
 
     #  FLIGHT的时候，控制足底移动到落足点
     if robot_status.robot_state == FLIGHT:
-        print(robot_status.joint_space_lxz.r, robot_status.joint_space_lxz.spring_len)
+        # print(robot_status.joint_space_lxz.r, robot_status.joint_space_lxz.spring_len)
         r = robot_status.joint_space_lxz.r
         x_f = robot_status.x_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
                 robot_status.x_dot - robot_status.x_dot_desire)

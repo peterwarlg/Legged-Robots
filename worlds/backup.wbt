@@ -147,7 +147,7 @@ Robot {
                     boundingObject USE leg
                     physics Physics {
                       density -1
-                      mass 1
+                      mass 0.5
                     }
                   }
                 }
@@ -177,7 +177,7 @@ Robot {
         }
         physics Physics {
           density -1
-          mass 0.5
+          mass 0.25
         }
       }
     }
@@ -367,7 +367,7 @@ Robot {
                     boundingObject USE leg
                     physics Physics {
                       density -1
-                      mass 1
+                      mass 0.5
                     }
                   }
                 }
@@ -396,7 +396,7 @@ Robot {
         }
         physics Physics {
           density -1
-          mass 0.5
+          mass 0.25
         }
       }
     }
