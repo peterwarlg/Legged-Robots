@@ -29,10 +29,10 @@ class EulerAnglesRPY:
 
 class JointSpaceLXZ:
     def __init__(self, r=0.0, p=0.0, y=0.0, l=0.0):
-        self.r = r
-        self.X_motor_angle = p
-        self.Z_motor_angle = y
-        self.spring_len = l
+        self.r = r # 末端到机身长度
+        self.X_motor_angle = p  # x角度
+        self.Z_motor_angle = y  # z角度
+        self.spring_len = l # 弹簧长度
 
 
 class RobotStatus:
@@ -55,28 +55,29 @@ class RobotStatus:
         self.euler_angles_dot = EulerAnglesRPY()
 
         # A腿计算矩阵
-        self.rotation_matrix_B_under_H: np.ndarray = np.eye(3, dtype=float)  # body->world
-        self.rotation_matrix_H_under_B: np.ndarray = np.eye(3, dtype=float)  # world->body
+        self.rotation_matrix_B_under_H_LegA: np.ndarray = np.eye(3, dtype=float)  # body->world
+        self.rotation_matrix_H_under_B_LegA: np.ndarray = np.eye(3, dtype=float)  # world->body
         # B腿计算矩阵
-        self.rotation_matrix_B_under_H_2: np.ndarray = np.eye(3, dtype=float)  # body->world
-        self.rotation_matrix_H_under_B_2: np.ndarray = np.eye(3, dtype=float)  # world->body
+        self.rotation_matrix_B_under_H_LegB: np.ndarray = np.eye(3, dtype=float)  # body->world
+        self.rotation_matrix_H_under_B_LegB: np.ndarray = np.eye(3, dtype=float)  # world->body
 
         # r x z
-        self.joint_space_lxz = JointSpaceLXZ(0.8, 0.0, 0.0, 0.0)
-        self.joint_space_lxz_dot = JointSpaceLXZ(0.0, 0.0, 0.0, 0.0)
-        self.joint_space_lxz_2 = JointSpaceLXZ(0.8, 0.0, 0.0, 0.0)
-        self.joint_space_lxz_dot_2 = JointSpaceLXZ(0.0, 0.0, 0.0, 0.0)
+        self.joint_space_lxz_A = JointSpaceLXZ(0.8, 0.0, 0.0, 0.0)
+        self.joint_space_lxz_dot_A = JointSpaceLXZ(0.0, 0.0, 0.0, 0.0)
+        self.joint_space_lxz_B = JointSpaceLXZ(0.8, 0.0, 0.0, 0.0)
+        self.joint_space_lxz_dot_B = JointSpaceLXZ(0.0, 0.0, 0.0, 0.0)
+
 
         # A: x y z
-        self.Point_hat_B: np.ndarray = np.array([0.0, 0.0, 0.0])
-        self.Point_hat_H: np.ndarray = np.array([0.0, 0.0, 0.0])
-        self.Point_hat_B_desire: np.ndarray = np.array([0.0, 0.0, 0.0])
-        self.Point_hat_H_desire: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_B_LegA: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_H_LegA: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_B_desire_LegA: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_H_desire_LegA: np.ndarray = np.array([0.0, 0.0, 0.0])
         # B: x y z
-        self.Point_hat_B_2: np.ndarray = np.array([0.0, 0.0, 0.0])
-        self.Point_hat_H_2: np.ndarray = np.array([0.0, 0.0, 0.0])
-        self.Point_hat_B_desire_2: np.ndarray = np.array([0.0, 0.0, 0.0])
-        self.Point_hat_H_desire_2: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_B_LegB: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_H_LegB: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_B_desire_LegB: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_H_desire_LegB: np.ndarray = np.array([0.0, 0.0, 0.0])
 
         self.is_foot_touching_flg_A: bool = True
         self.is_foot_touching_flg_B: bool = True
@@ -94,8 +95,11 @@ class RobotStatus:
         self.pre_is_foot_touching_flg_B = False
         self.stance_start_ms: int = 0
         self.debug = []
-        self.pre_x_dot = 0.0
-        self.pre_z_dot = 0.0
+        self.pre_x_dot_A = 0.0
+        self.pre_z_dot_A = 0.0
+        self.pre_x_dot_B = 0.0
+        self.pre_z_dot_B = 0.0
+
 
         # 腿缩短量 正数时，腿向上移动，机身向下偏置
         self.offset_A = 0.0
@@ -162,37 +166,37 @@ class Devices:
     def set_X_torque_A(self, torque):
         self.X_motor_A.setTorque(torque)
 
-    # def set_X_torque_2(self, torque):
-    #     self.X_motor_B.setTorque(torque)
+    def set_X_torque_B(self, torque):
+        self.X_motor_B.setTorque(torque)
 
     def set_Z_torque_A(self, torque):
         self.Z_motor_A.setTorque(torque)
 
     #
-    # def set_Z_torque_2(self, torque):
-    #     self.Z_motor_B.setTorque(torque)
+    def set_Z_torque_B(self, torque):
+        self.Z_motor_B.setTorque(torque)
 
     def get_X_motor_angle_A(self) -> float:
         angle: float = self.X_motor_position_sensor_A.getValue()
         return angle * 180.0 / math.pi
 
-    # def get_X_motor_angle_2(self) -> float:
-    #     angle: float = self.X_motor_position_sensor_B.getValue()
-    #     return angle * 180.0 / math.pi
+    def get_X_motor_angle_B(self) -> float:
+        angle: float = self.X_motor_position_sensor_B.getValue()
+        return angle * 180.0 / math.pi
 
     def get_Z_motor_angle_A(self) -> float:
         angle: float = self.Z_motor_position_sensor_A.getValue()
         return angle * 180.0 / math.pi
 
-    # def get_Z_motor_angle_2(self) -> float:
-    #     angle: float = self.Z_motor_position_sensor_B.getValue()
-    #     return angle * 180.0 / math.pi
+    def get_Z_motor_angle_B(self) -> float:
+        angle: float = self.Z_motor_position_sensor_B.getValue()
+        return angle * 180.0 / math.pi
 
     def is_foot_touching_A(self) -> bool:
         return self.touch_sensor_A.getValue()
 
-    # def is_foot_touching_2(self) -> bool:
-    #     return self.touch_sensor_B.getValue()
+    def is_foot_touching_B(self) -> bool:
+        return self.touch_sensor_B.getValue()
 
     def get_IMU_Angle(self) -> EulerAnglesRPY:
         data = self.IMU.getRollPitchYaw()
@@ -202,17 +206,27 @@ class Devices:
         euler_angles_rpy.yaw = data[2] * 180.0 / math.pi
         return euler_angles_rpy
 
-    def set_spring_position_A(self, position):
-        err = position - self.get_spring_length_A()
-
     def set_shorten_length_A(self, length: float):
         self.shorten_motor_A.setPosition(length)
 
     def get_shorten_length_A(self) -> float:
         return self.shorten_position_sensor_A.getValue()
 
-    # def set_shorten_length_B(self, length: float):
-    #     self.shorten_motor_B.setPosition(length)
-    #
-    # def get_shorten_length_B(self) -> float:
-    #     return self.shorten_position_sensor_B.getValue()
+    def set_shorten_length_B(self, length: float):
+        self.shorten_motor_B.setPosition(length)
+
+    def get_shorten_length_B(self) -> float:
+        return self.shorten_position_sensor_B.getValue()
+
+    def fix_motor_angle_A(self):
+        x = self.X_motor_position_sensor_A.getValue()
+        z = self.Z_motor_position_sensor_A.getValue()
+        self.X_motor_A.setPosition(x)
+        self.Z_motor_A.setPosition(x)
+
+    def fix_motor_angle_B(self):
+        x = self.X_motor_position_sensor_B.getValue()
+        z = self.Z_motor_position_sensor_B.getValue()
+        self.X_motor_B.setPosition(x)
+        self.Z_motor_B.setPosition(x)
+

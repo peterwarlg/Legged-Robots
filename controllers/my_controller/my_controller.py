@@ -159,9 +159,9 @@ def update_xz_dot():
     now_x_dot = -(now_x - pre_x) / (0.001 * timestep)
     now_z_dot = -(now_z - pre_z) / (0.001 * timestep)
     # // 滤波
-    now_x_dot = hip_robot.pre_x_dot * 0.5 + now_x_dot * 0.5
-    now_z_dot = hip_robot.pre_z_dot * 0.5 + now_z_dot * 0.5
-    hip_robot.pre_x_dot, hip_robot.pre_z_dot = now_x_dot, now_z_dot
+    now_x_dot = hip_robot.pre_x_dot_A * 0.5 + now_x_dot * 0.5
+    now_z_dot = hip_robot.pre_z_dot_A * 0.5 + now_z_dot * 0.5
+    hip_robot.pre_x_dot_A, hip_robot.pre_z_dot_A = now_x_dot, now_z_dot
     if (hip_robot.robot_state == COMPRESSION) or (hip_robot.robot_state == THRUST):
         hip_robot.x_dot = now_x_dot
         hip_robot.z_dot = now_z_dot

@@ -2,6 +2,8 @@
 
 # You may need to import some classes of the controller module. Ex:
 #  from controller import Robot, Motor, DistanceSensor
+import numpy as np
+
 from interfaces import *
 from scipy.spatial.transform import Rotation as R
 from controller import Robot, Motor, TouchSensor, PositionSensor, InertialUnit
@@ -16,6 +18,7 @@ devices = Devices(robot)
 TIME_STEP = int(robot.getBasicTimeStep())
 # 滤波系数
 ALPHA = 1.0  # new value coeff  1 - ALPHA : old value coeff
+OFFSET_LEN = 0.5
 
 
 def updateRobotState():
@@ -25,7 +28,7 @@ def updateRobotState():
 
     #  足底传感器更新
     robot_status.is_foot_touching_flg_A = devices.is_foot_touching_A()
-    robot_status.is_foot_touching_flg_B = devices.is_foot_touching_A()
+    robot_status.is_foot_touching_flg_B = devices.is_foot_touching_B()
 
     # IMU，IMU导数，以及旋转矩阵更新
     imu_now: EulerAnglesRPY = devices.get_IMU_Angle()
@@ -45,33 +48,64 @@ def updateRobotState():
 
     # 更新旋转矩阵
     r = R.from_euler('xzy', [imu_now.roll, imu_now.pitch, imu_now.yaw], degrees=True)
-    robot_status.rotation_matrix_B_under_H = np.array(copy.deepcopy(r.as_matrix()))
-    robot_status.rotation_matrix_H_under_B = np.transpose(copy.deepcopy(robot_status.rotation_matrix_B_under_H))
+    robot_status.rotation_matrix_B_under_H_LegA = np.array(copy.deepcopy(r.as_matrix()))
+    robot_status.rotation_matrix_H_under_B_LegA = np.transpose(
+        copy.deepcopy(robot_status.rotation_matrix_B_under_H_LegA))
+
+    robot_status.rotation_matrix_B_under_H_LegB = np.array(copy.deepcopy(r.as_matrix()))
+    robot_status.rotation_matrix_H_under_B_LegB = np.transpose(
+        copy.deepcopy(robot_status.rotation_matrix_B_under_H_LegB))
 
     # 弹簧长度及其导数更新
-    robot_status.joint_space_lxz.spring_len = devices.get_spring_length_A()
+    robot_status.joint_space_lxz_dot_A.spring_len = (
+                                                            devices.get_spring_length_A() - robot_status.joint_space_lxz_A.spring_len) / (
+                                                            0.001 * TIME_STEP)
+    robot_status.joint_space_lxz_dot_B.spring_len = (
+                                                            devices.get_spring_length_B() - robot_status.joint_space_lxz_B.spring_len) / (
+                                                            0.001 * TIME_STEP)
+    robot_status.joint_space_lxz_A.spring_len = devices.get_spring_length_A()
+    robot_status.joint_space_lxz_B.spring_len = devices.get_spring_length_B()
 
     now_r_A: float = devices.get_spring_length_A() - devices.get_shorten_length_A()
-    now_r_A_dot = (now_r_A - robot_status.joint_space_lxz.r) / (0.001 * TIME_STEP)
+    now_r_A_dot = (now_r_A - robot_status.joint_space_lxz_A.r) / (0.001 * TIME_STEP)
 
-    robot_status.joint_space_lxz.r = now_r_A
-    robot_status.joint_space_lxz_dot.r = robot_status.joint_space_lxz_dot.r * (
+    now_r_B: float = devices.get_spring_length_B() - devices.get_shorten_length_B()
+    now_r_B_dot = (now_r_B - robot_status.joint_space_lxz_B.r) / (0.001 * TIME_STEP)
+
+    robot_status.joint_space_lxz_A.r = now_r_A
+    robot_status.joint_space_lxz_dot_A.r = robot_status.joint_space_lxz_dot_A.r * (
             1.0 - ALPHA) + now_r_A_dot * ALPHA  # 一阶低通滤波器
 
+    robot_status.joint_space_lxz_B.r = now_r_B
+    robot_status.joint_space_lxz_dot_B.r = robot_status.joint_space_lxz_dot_B.r * (
+            1.0 - ALPHA) + now_r_B_dot * ALPHA  # 一阶低通滤波器
 
     # X、Z关节角度更新*/
-    now_X_motor_angle: float = devices.get_X_motor_angle_A()
-    now_X_motor_angle_dot: float = (now_X_motor_angle - robot_status.joint_space_lxz.X_motor_angle) / (
+    now_X_motor_angle_A: float = devices.get_X_motor_angle_A()
+    now_X_motor_angle_dot_A: float = (now_X_motor_angle_A - robot_status.joint_space_lxz_A.X_motor_angle) / (
             0.001 * TIME_STEP)
-    robot_status.joint_space_lxz.X_motor_angle = now_X_motor_angle
-    robot_status.joint_space_lxz_dot.X_motor_angle = robot_status.joint_space_lxz_dot.X_motor_angle * (
-            1.0 - ALPHA) + now_X_motor_angle_dot * ALPHA  # 一阶低通滤波器
+    robot_status.joint_space_lxz_A.X_motor_angle = now_X_motor_angle_A
+    robot_status.joint_space_lxz_dot_A.X_motor_angle = robot_status.joint_space_lxz_dot_A.X_motor_angle * (
+            1.0 - ALPHA) + now_X_motor_angle_dot_A * ALPHA  # 一阶低通滤波器
 
-    now_Z_motor_angle = devices.get_Z_motor_angle_A()
-    now_Z_motor_angle_dot = (now_Z_motor_angle - robot_status.joint_space_lxz.Z_motor_angle) / (0.001 * TIME_STEP)
-    robot_status.joint_space_lxz.Z_motor_angle = now_Z_motor_angle
-    robot_status.joint_space_lxz_dot.Z_motor_angle = robot_status.joint_space_lxz_dot.Z_motor_angle * (
-            1.0 - ALPHA) + now_Z_motor_angle_dot * ALPHA  # 一阶低通滤波器
+    now_Z_motor_angle_A = devices.get_Z_motor_angle_A()
+    now_Z_motor_angle_dot_A = (now_Z_motor_angle_A - robot_status.joint_space_lxz_A.Z_motor_angle) / (0.001 * TIME_STEP)
+    robot_status.joint_space_lxz_A.Z_motor_angle = now_Z_motor_angle_A
+    robot_status.joint_space_lxz_dot_A.Z_motor_angle = robot_status.joint_space_lxz_dot_A.Z_motor_angle * (
+            1.0 - ALPHA) + now_Z_motor_angle_dot_A * ALPHA  # 一阶低通滤波器
+
+    now_X_motor_angle_B: float = devices.get_X_motor_angle_B()
+    now_X_motor_angle_dot_B: float = (now_X_motor_angle_B - robot_status.joint_space_lxz_B.X_motor_angle) / (
+            0.001 * TIME_STEP)
+    robot_status.joint_space_lxz_B.X_motor_angle = now_X_motor_angle_B
+    robot_status.joint_space_lxz_dot_B.X_motor_angle = robot_status.joint_space_lxz_dot_B.X_motor_angle * (
+            1.0 - ALPHA) + now_X_motor_angle_dot_B * ALPHA  # 一阶低通滤波器
+
+    now_Z_motor_angle_B = devices.get_Z_motor_angle_B()
+    now_Z_motor_angle_dot_B = (now_Z_motor_angle_B - robot_status.joint_space_lxz_B.Z_motor_angle) / (0.001 * TIME_STEP)
+    robot_status.joint_space_lxz_B.Z_motor_angle = now_Z_motor_angle_B
+    robot_status.joint_space_lxz_dot_B.Z_motor_angle = robot_status.joint_space_lxz_dot_B.Z_motor_angle * (
+            1.0 - ALPHA) + now_Z_motor_angle_dot_B * ALPHA  # 一阶低通滤波器
 
     # 机器人在世界坐标系下水平速度估计更新
     update_xz_dot()
@@ -95,23 +129,43 @@ def forwardKinematics(jointPoint: JointSpaceLXZ) -> np.ndarray:
 
 def update_xz_dot():
     global robot_status
-    robot_status.Point_hat_B = forwardKinematics(robot_status.joint_space_lxz)
+    robot_status.Point_hat_B_LegA = forwardKinematics(robot_status.joint_space_lxz_A)
+    robot_status.Point_hat_B_LegB = forwardKinematics(robot_status.joint_space_lxz_B)
     #  转换到{H}坐标系下
-    pre_x = robot_status.Point_hat_H[0]
-    pre_z = robot_status.Point_hat_H[2]
-    robot_status.Point_hat_H = copy.deepcopy(robot_status.rotation_matrix_B_under_H @ robot_status.Point_hat_B)
-    now_x = robot_status.Point_hat_H[0]
-    now_z = robot_status.Point_hat_H[2]
+    pre_x_A = robot_status.Point_hat_H_LegA[0]
+    pre_z_A = robot_status.Point_hat_H_LegA[2]
+    robot_status.Point_hat_H_LegA = copy.deepcopy(
+        robot_status.rotation_matrix_B_under_H_LegA @ robot_status.Point_hat_B_LegA)
+    now_x_A = robot_status.Point_hat_H_LegA[0]
+    now_z_A = robot_status.Point_hat_H_LegA[2]
     #  求导
-    now_x_dot = -(now_x - pre_x) / (0.001 * TIME_STEP)
-    now_z_dot = -(now_z - pre_z) / (0.001 * TIME_STEP)
+    now_x_dot_A = -(now_x_A - pre_x_A) / (0.001 * TIME_STEP)
+    now_z_dot_A = -(now_z_A - pre_z_A) / (0.001 * TIME_STEP)
     #  滤波
-    now_x_dot = robot_status.pre_x_dot * (1.0 - ALPHA) + now_x_dot * ALPHA
-    now_z_dot = robot_status.pre_z_dot * (1.0 - ALPHA) + now_z_dot * ALPHA
-    robot_status.pre_x_dot, robot_status.pre_z_dot = now_x_dot, now_z_dot
-    if (robot_status.robot_state == COMPRESSION) or (robot_status.robot_state == THRUST):
-        robot_status.x_dot = now_x_dot
-        robot_status.z_dot = now_z_dot
+    now_x_dot_A = robot_status.pre_x_dot_A * (1.0 - ALPHA) + now_x_dot_A * ALPHA
+    now_z_dot_A = robot_status.pre_z_dot_A * (1.0 - ALPHA) + now_z_dot_A * ALPHA
+    robot_status.pre_x_dot_A, robot_status.pre_z_dot_A = now_x_dot_A, now_z_dot_A
+
+    pre_x_B = robot_status.Point_hat_H_LegB[0]
+    pre_z_B = robot_status.Point_hat_H_LegB[2]
+    robot_status.Point_hat_H_LegB = copy.deepcopy(
+        robot_status.rotation_matrix_B_under_H_LegB @ robot_status.Point_hat_B_LegB)
+    now_x_B = robot_status.Point_hat_H_LegB[0]
+    now_z_B = robot_status.Point_hat_H_LegB[2]
+    #  求导
+    now_x_dot_B = -(now_x_B - pre_x_B) / (0.001 * TIME_STEP)
+    now_z_dot_B = -(now_z_B - pre_z_B) / (0.001 * TIME_STEP)
+    #  滤波
+    now_x_dot_B = robot_status.pre_x_dot_B * (1.0 - ALPHA) + now_x_dot_B * ALPHA
+    now_z_dot_B = robot_status.pre_z_dot_B * (1.0 - ALPHA) + now_z_dot_B * ALPHA
+    robot_status.pre_x_dot_B, robot_status.pre_z_dot_B = now_x_dot_B, now_z_dot_B
+
+    if (robot_status.robot_state_2 == COMPRESSION_A) or (robot_status.robot_state_2 == THRUST_A):
+        robot_status.x_dot = now_x_dot_A
+        robot_status.z_dot = now_z_dot_A
+    if (robot_status.robot_state_2 == COMPRESSION_B) or (robot_status.robot_state_2 == THRUST_B):
+        robot_status.x_dot = now_x_dot_B
+        robot_status.z_dot = now_z_dot_B
         # robot_status.x_dot = devices.gps.getValues()[0]
         # robot_status.z_dot = devices.gps.getValues()[2]
 
@@ -122,53 +176,22 @@ def update_last_Ts():
         robot_status.stance_start_ms = robot_status.system_ms
     if robot_status.pre_is_foot_touching_flg_A and not robot_status.is_foot_touching_flg_A:
         stance_end_ms = robot_status.system_ms
-        robot_status.Ts = 0.001 * float(stance_end_ms - robot_status.stance_start_ms)
+        robot_status.Ts = 0.001 * float(stance_end_ms - robot_status.stance_start_ms) / 2
     robot_status.pre_is_foot_touching_flg_A = robot_status.is_foot_touching_flg_A
-
 
 def updateRobotStateMachine():
     global robot_status
-    # print(robot_status.robot_state)
-    # if not robot_status.is_foot_touching_flg_A:
-    #     robot_status.robot_state = FLIGHT
-    #     return
 
-    if robot_status.robot_state == LOADING:
-        if robot_status.joint_space_lxz.spring_len < robot_status.spring_normal_length * robot_status.r_threshold:
-            robot_status.robot_state = COMPRESSION
-        return
-    elif robot_status.robot_state == COMPRESSION:
-        if robot_status.joint_space_lxz_dot.r > 0.0:
-            robot_status.robot_state = THRUST
-            return
-    elif robot_status.robot_state == THRUST:
-        if robot_status.joint_space_lxz.spring_len > robot_status.spring_normal_length * robot_status.r_threshold:
-            robot_status.robot_state = UNLOADING
-        return
-    elif robot_status.robot_state == UNLOADING:
-        if not robot_status.is_foot_touching_flg_A:
-            robot_status.robot_state = FLIGHT
-        return
-    elif robot_status.robot_state == FLIGHT:
-        if robot_status.is_foot_touching_flg_A:
-            robot_status.robot_state = LOADING
-        return
-    else:
-        return
-
-
-def updateRobotStateMachine2():
-    global robot_status
     if robot_status.robot_state_2 == LOADING_A:
-        if robot_status.joint_space_lxz.spring_len < robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.joint_space_lxz_A.spring_len < robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.robot_state_2 = COMPRESSION_A
         return
     elif robot_status.robot_state_2 == COMPRESSION_A:
-        if robot_status.joint_space_lxz_dot.r > 0.0:
+        if robot_status.joint_space_lxz_dot_A.spring_len > 0.0:
             robot_status.robot_state_2 = THRUST_A
             return
     elif robot_status.robot_state_2 == THRUST_A:
-        if robot_status.joint_space_lxz.spring_len > robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.joint_space_lxz_A.spring_len > robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.robot_state_2 = UNLOADING_A
         return
     elif robot_status.robot_state_2 == UNLOADING_A:
@@ -181,141 +204,224 @@ def updateRobotStateMachine2():
         return
     # B
     elif robot_status.robot_state_2 == LOADING_B:
-        if robot_status.joint_space_lxz_2.r < robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.joint_space_lxz_B.spring_len < robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.robot_state_2 = COMPRESSION_B
         return
     elif robot_status.robot_state_2 == COMPRESSION_B:
-        if robot_status.joint_space_lxz_dot_2.r > 0.0:
+        print()
+        if robot_status.joint_space_lxz_dot_B.spring_len > 0.0:
             robot_status.robot_state_2 = THRUST_B
             return
     elif robot_status.robot_state_2 == THRUST_B:
-        if robot_status.joint_space_lxz_2.r > robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.joint_space_lxz_B.spring_len > robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.robot_state_2 = UNLOADING_B
         return
     elif robot_status.robot_state_2 == UNLOADING_B:
         if not robot_status.is_foot_touching_flg_B:
             robot_status.robot_state_2 = FLIGHT_B
         return
+    elif robot_status.robot_state_2 == FLIGHT_B:
+        if robot_status.is_foot_touching_flg_A:
+            robot_status.robot_state_2 = LOADING_A
+            return
     else:
         return
 
+def position_A():
+    r_a = robot_status.joint_space_lxz_A.r
+    x_f = robot_status.x_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
+            robot_status.x_dot - robot_status.x_dot_desire)
+    z_f = robot_status.z_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
+            robot_status.z_dot - robot_status.z_dot_desire)
+    y_f = -math.sqrt(r_a * r_a - x_f * x_f - z_f * z_f)
+
+    robot_status.Point_hat_H_desire_LegA = np.array([x_f, y_f, z_f])
+
+    # 转到{B}坐标系下 P_B = R^B_H * P_H
+    robot_status.Point_hat_B_desire_LegA = copy.deepcopy(
+        robot_status.rotation_matrix_H_under_B_LegA @ robot_status.Point_hat_H_desire_LegA)
+
+    #  计算期望关节角
+    [x_f_B, y_f_B, z_f_B] = robot_status.Point_hat_H_desire_LegA
+    x_angle_desire = math.atan(z_f_B / y_f_B) * 180.0 / math.pi
+    z_angle_desire = math.asin(x_f_B / r_a) * 180.0 / math.pi
+
+    #  控制关节角
+    x_angle = robot_status.joint_space_lxz_A.X_motor_angle
+    z_angle = robot_status.joint_space_lxz_A.Z_motor_angle
+    x_angle_dot = robot_status.joint_space_lxz_dot_A.X_motor_angle
+    z_angle_dot = robot_status.joint_space_lxz_dot_A.Z_motor_angle
+    Tx = -robot_status.k_leg_p * (x_angle - x_angle_desire) - robot_status.k_leg_v * x_angle_dot
+    Tz = -robot_status.k_leg_p * (z_angle - z_angle_desire) - robot_status.k_leg_v * z_angle_dot
+    devices.set_X_torque_A(Tx)
+    devices.set_Z_torque_A(Tz)
+
+
+def position_B():
+    r_b = robot_status.joint_space_lxz_B.r
+    x_f = robot_status.x_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
+            robot_status.x_dot - robot_status.x_dot_desire)
+    z_f = robot_status.z_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
+            robot_status.z_dot - robot_status.z_dot_desire)
+    y_f = -math.sqrt(r_b * r_b - x_f * x_f - z_f * z_f)
+
+    robot_status.Point_hat_H_desire_LegB = np.array([x_f, y_f, z_f])
+
+    # 转到{B}坐标系下 P_B = R^B_H * P_H
+    robot_status.Point_hat_B_desire_LegB = copy.deepcopy(
+        robot_status.rotation_matrix_H_under_B_LegB @ robot_status.Point_hat_H_desire_LegB)
+
+    #  计算期望关节角
+    [x_f_B, y_f_B, z_f_B] = robot_status.Point_hat_H_desire_LegB
+    x_angle_desire = math.atan(z_f_B / y_f_B) * 180.0 / math.pi
+    z_angle_desire = math.asin(x_f_B / r_b) * 180.0 / math.pi
+
+    #  控制关节角
+    x_angle = robot_status.joint_space_lxz_B.X_motor_angle
+    z_angle = robot_status.joint_space_lxz_B.Z_motor_angle
+    x_angle_dot = robot_status.joint_space_lxz_dot_B.X_motor_angle
+    z_angle_dot = robot_status.joint_space_lxz_dot_B.Z_motor_angle
+    Tx = -robot_status.k_leg_p * (x_angle - x_angle_desire) - robot_status.k_leg_v * x_angle_dot
+    Tz = -robot_status.k_leg_p * (z_angle - z_angle_desire) - robot_status.k_leg_v * z_angle_dot
+    devices.set_X_torque_B(Tx)
+    devices.set_Z_torque_B(Tz)
+
 
 def robot_control():
-    dx = robot_status.spring_normal_length - robot_status.joint_space_lxz.spring_len  # 求压缩量
-    f_spring = dx * robot_status.k_spring
-    if robot_status.robot_state == THRUST:
-        f_spring += robot_status.F_thrust
-    devices.set_spring_force(devices.spring_motor_A, f_spring)
+    # common控制部分
+    # 2. 控制弹簧
+    dx_a = robot_status.spring_normal_length - robot_status.joint_space_lxz_A.spring_len  # 求压缩量
+    dx_b = robot_status.spring_normal_length - robot_status.joint_space_lxz_B.spring_len  # 求压缩量
+    f_spring_a = dx_a * robot_status.k_spring
+    f_spring_b = dx_b * robot_status.k_spring
 
-    # 控制臀部扭矩力 LOADING和UNLOADING时候，扭矩为0
-    if (robot_status.robot_state == LOADING) or (robot_status.robot_state == UNLOADING):
-        devices.set_X_torque_A(0.0)
-        devices.set_Z_torque_A(0.0)
-
-    # COMPRESSION和THRUST时候，臀部电机控制身体姿态
-    if (robot_status.robot_state == COMPRESSION) or (robot_status.robot_state == THRUST):
-        Tx = -(
-                -robot_status.k_pose_p * robot_status.euler_angles.roll - robot_status.k_pose_v * robot_status.euler_angles_dot.roll)
-        Tz = -(
-                -robot_status.k_pose_p * robot_status.euler_angles.pitch - robot_status.k_pose_v * robot_status.euler_angles_dot.pitch)
-        devices.set_X_torque_A(Tx)
-        devices.set_Z_torque_A(Tz)
-
-    #  FLIGHT的时候，控制足底移动到落足点
-    if robot_status.robot_state == FLIGHT:
-        # print(robot_status.joint_space_lxz.r, robot_status.joint_space_lxz.spring_len)
-        r = robot_status.joint_space_lxz.r
-        x_f = robot_status.x_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
-                robot_status.x_dot - robot_status.x_dot_desire)
-        z_f = robot_status.z_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
-                robot_status.z_dot - robot_status.z_dot_desire)
-        y_f = -math.sqrt(r * r - x_f * x_f - z_f * z_f)
-
-        robot_status.Point_hat_H_desire = np.array([x_f, y_f, z_f])
-        # 转到{B}坐标系下 P_B = R^B_H * P_H
-        robot_status.Point_hat_B_desire = copy.deepcopy(
-            robot_status.rotation_matrix_H_under_B @ robot_status.Point_hat_H_desire)
-
-        #  计算期望关节角
-        [x_f_B, y_f_B, z_f_B] = robot_status.Point_hat_H_desire
-        x_angle_desire = math.atan(z_f_B / y_f_B) * 180.0 / math.pi
-        z_angle_desire = math.asin(x_f_B / r) * 180.0 / math.pi
-
-        #  控制关节角
-        x_angle = robot_status.joint_space_lxz.X_motor_angle
-        z_angle = robot_status.joint_space_lxz.Z_motor_angle
-        x_angle_dot = robot_status.joint_space_lxz_dot.X_motor_angle
-        z_angle_dot = robot_status.joint_space_lxz_dot.Z_motor_angle
-        Tx = -robot_status.k_leg_p * (x_angle - x_angle_desire) - robot_status.k_leg_v * x_angle_dot
-        Tz = -robot_status.k_leg_p * (z_angle - z_angle_desire) - robot_status.k_leg_v * z_angle_dot
-
-        devices.set_X_torque_A(Tx)
-        devices.set_Z_torque_A(Tz)
-        # devices.X_motor_A.setPosition(x_angle_desire / 180 * math.pi)
-        # devices.Z_motor_A.setPosition(z_angle_desire / 180 * math.pi)
-
-
-def robot_control_2():
-    dx = robot_status.spring_normal_length - robot_status.joint_space_lxz.r  # 求压缩量
-    dx2 = robot_status.spring_normal_length - robot_status.joint_space_lxz_2.r  # 求压缩量
-    f_spring = dx * robot_status.k_spring
-    f_spring_2 = dx2 * robot_status.k_spring
     if robot_status.robot_state_2 == THRUST_A:
-        f_spring += robot_status.F_thrust
-    devices.set_spring_force(devices.spring_motor_A, f_spring)
+        f_spring_a += robot_status.F_thrust
+    devices.set_spring_force(devices.spring_motor_A, f_spring_a)
 
-    if robot_status.robot_state_2 == FLIGHT_B:
-        f_spring_2 += robot_status.F_thrust
-    devices.set_spring_force(devices.spring_motor_B, f_spring_2)
-
-    # 控制臀部扭矩力 LOADING和UNLOADING时候，扭矩为0
-    if (robot_status.robot_state == LOADING) or (robot_status.robot_state == UNLOADING):
-        devices.set_X_torque_A(0.0)
-        devices.set_Z_torque_A(0.0)
+    if robot_status.robot_state_2 == THRUST_B:
+        f_spring_b += robot_status.F_thrust
+    devices.set_spring_force(devices.spring_motor_B, f_spring_b)
 
     if robot_status.robot_state_2 == LOADING_A:
-        # zero hip torque A
         devices.set_X_torque_A(0.0)
         devices.set_Z_torque_A(0.0)
-        # shorted B
+        # shorten B
+        robot_status.offset_B = OFFSET_LEN
+        robot_status.offset_A = 0.0
+        # dont move hip B
+        devices.fix_motor_angle_B()
 
-    # COMPRESSION和THRUST时候，臀部电机控制身体姿态
-    if (robot_status.robot_state == COMPRESSION) or (robot_status.robot_state == THRUST):
+    if robot_status.robot_state_2 == COMPRESSION_A:
+        # erect body
         Tx = -(
                 -robot_status.k_pose_p * robot_status.euler_angles.roll - robot_status.k_pose_v * robot_status.euler_angles_dot.roll)
         Tz = -(
                 -robot_status.k_pose_p * robot_status.euler_angles.pitch - robot_status.k_pose_v * robot_status.euler_angles_dot.pitch)
         devices.set_X_torque_A(Tx)
         devices.set_Z_torque_A(Tz)
+        # keep b short
+        robot_status.offset_B = OFFSET_LEN
+        robot_status.offset_A = 0.0
+        # position B for landing
+        position_B()
 
-    #  FLIGHT的时候，控制足底移动到落足点
-    if robot_status.robot_state == FLIGHT:
-        r = robot_status.joint_space_lxz.r
-        x_f = robot_status.x_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
-                robot_status.x_dot - robot_status.x_dot_desire)
-        z_f = robot_status.z_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
-                robot_status.z_dot - robot_status.z_dot_desire)
-        y_f = -math.sqrt(r * r - x_f * x_f - z_f * z_f)
-
-        robot_status.Point_hat_H_desire = np.array([x_f, y_f, z_f])
-        # 转到{B}坐标系下 P_B = R^B_H * P_H
-        robot_status.Point_hat_B_desire = copy.deepcopy(
-            robot_status.rotation_matrix_H_under_B @ robot_status.Point_hat_H_desire)
-
-        #  计算期望关节角
-        [x_f_B, y_f_B, z_f_B] = robot_status.Point_hat_H_desire
-        x_angle_desire = math.atan(z_f_B / y_f_B) * 180.0 / math.pi
-        z_angle_desire = math.asin(x_f_B / r) * 180.0 / math.pi
-
-        #  控制关节角
-        x_angle = robot_status.joint_space_lxz.X_motor_angle
-        z_angle = robot_status.joint_space_lxz.Z_motor_angle
-        x_angle_dot = robot_status.joint_space_lxz_dot.X_motor_angle
-        z_angle_dot = robot_status.joint_space_lxz_dot.Z_motor_angle
-        Tx = -robot_status.k_leg_p * (x_angle - x_angle_desire) - robot_status.k_leg_v * x_angle_dot
-        Tz = -robot_status.k_leg_p * (z_angle - z_angle_desire) - robot_status.k_leg_v * z_angle_dot
+    if robot_status.robot_state_2 == THRUST_A:
+        # erect body
+        Tx = -(
+                -robot_status.k_pose_p * robot_status.euler_angles.roll - robot_status.k_pose_v * robot_status.euler_angles_dot.roll)
+        Tz = -(
+                -robot_status.k_pose_p * robot_status.euler_angles.pitch - robot_status.k_pose_v * robot_status.euler_angles_dot.pitch)
         devices.set_X_torque_A(Tx)
         devices.set_Z_torque_A(Tz)
+        # keep b short
+        robot_status.offset_B = OFFSET_LEN
+        robot_status.offset_A = 0.0
+        # position B for landing
+        position_B()
+
+    if robot_status.robot_state_2 == UNLOADING_A:
+        # shorten A
+        robot_status.offset_B = OFFSET_LEN
+        robot_status.offset_A = OFFSET_LEN
+        # zero hip torque
+        devices.set_X_torque_A(0.0)
+        devices.set_Z_torque_A(0.0)
+        # position B for landing
+        position_B()
+
+    if robot_status.robot_state_2 == FLIGHT_A:
+        # shorten A
+        robot_status.offset_A = OFFSET_LEN
+        # length B
+        robot_status.offset_B = 0.0
+        # dont move hip A
+        devices.fix_motor_angle_A()
+        # position B for landing
+        position_B()
+
+    if robot_status.robot_state_2 == LOADING_B:
+        devices.set_X_torque_B(0.0)
+        devices.set_Z_torque_B(0.0)
+        # shorten A
+        robot_status.offset_A = OFFSET_LEN
+        robot_status.offset_B = 0.0
+        # dont move hip A
+        devices.fix_motor_angle_A()
+
+    if robot_status.robot_state_2 == COMPRESSION_B:
+        # erect body
+        Tx = -(
+                -robot_status.k_pose_p * robot_status.euler_angles.roll - robot_status.k_pose_v * robot_status.euler_angles_dot.roll)
+        Tz = -(
+                -robot_status.k_pose_p * robot_status.euler_angles.pitch - robot_status.k_pose_v * robot_status.euler_angles_dot.pitch)
+        devices.set_X_torque_B(Tx)
+        devices.set_Z_torque_B(Tz)
+        # keep b short
+        robot_status.offset_A = OFFSET_LEN
+        robot_status.offset_B = 0.0
+        # position B for landing
+        position_A()
+
+    if robot_status.robot_state_2 == THRUST_B:
+        # erect body
+        Tx = -(
+                -robot_status.k_pose_p * robot_status.euler_angles.roll - robot_status.k_pose_v * robot_status.euler_angles_dot.roll)
+        Tz = -(
+                -robot_status.k_pose_p * robot_status.euler_angles.pitch - robot_status.k_pose_v * robot_status.euler_angles_dot.pitch)
+        devices.set_X_torque_B(Tx)
+        devices.set_Z_torque_B(Tz)
+        # keep b short
+        robot_status.offset_A = OFFSET_LEN
+        robot_status.offset_B = 0.0
+        # position B for landing
+        position_A()
+
+    if robot_status.robot_state_2 == UNLOADING_B:
+        # shorten b AND keep A short
+        robot_status.offset_B = OFFSET_LEN
+        robot_status.offset_A = OFFSET_LEN
+        # zero hip torque
+        devices.set_X_torque_B(0.0)
+        devices.set_Z_torque_B(0.0)
+        # position B for landing
+        position_A()
+
+    if robot_status.robot_state_2 == FLIGHT_B:
+        # shorten B
+        robot_status.offset_B = OFFSET_LEN
+        # length A
+        robot_status.offset_A = 0.0
+        # dont move hip B
+        devices.fix_motor_angle_B()
+        # position A for landing
+        position_A()
+
+    # common控制部分
+    # 1. 缩短悬空腿
+    devices.set_shorten_length_A(robot_status.offset_A)
+    devices.set_shorten_length_B(robot_status.offset_B)
+
     pass
 
 
@@ -325,9 +431,28 @@ while robot.step(TIME_STEP) != -1:
     # Read the sensors:
     # Enter here functions to read sensor data, like:
     #  val = ds.getValue()
-    devices.shorten_motor_A.setPosition(robot_status.offset_A)
+    # devices.shorten_motor_B.setPosition(robot_status.offset_B)
+    state_names = [
+        "LOADING_A",
+        "COMPRESSION_A",
+        "THRUST_A",
+        "UNLOADING_A",
+        "FLIGHT_A",
+        "LOADING_B",
+        "COMPRESSION_B",
+        "THRUST_B",
+        "UNLOADING_B",
+        "FLIGHT_B"
+    ]
     updateRobotState()
     robot_control()
+    print(
+        "robot state: ", state_names[robot_status.robot_state_2],
+        'A offset: ', robot_status.offset_A,
+        'B offset: ', robot_status.offset_B,
+        'Angle of B: ', robot_status.joint_space_lxz_B.X_motor_angle, robot_status.joint_space_lxz_B.Z_motor_angle,
+
+    )
     # print(robot_status.Point_hat_B_desire_a)
     # Process sensor data here.
 
