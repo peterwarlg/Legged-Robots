@@ -4,8 +4,9 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation -0.3418643760838311 0.9331942026393367 0.11080310701936698 0.6083476175949359
-  position 6.2646709885052205 3.254891262894918 9.421164082643974
+  orientation -0.04349304457916537 -0.9944627898460584 -0.095666685344632 2.355180751892913
+  position -7.534245632812889 3.28084664045743 -7.574072187846748
+  follow "robot"
 }
 TexturedBackground {
 }
@@ -413,62 +414,5 @@ Robot {
     density -1
     mass 14
   }
-  controller "my_controller_2_leg"
-}
-Robot {
-  translation 4.95 2.49 -0.86
-  children [
-    DEF externBody Shape {
-      geometry Sphere {
-        radius 0.1
-      }
-      castShadows FALSE
-    }
-    HingeJoint {
-      jointParameters HingeJointParameters {
-        position 0.2
-      }
-      endPoint Solid {
-        translation 0 -1.4701000000000148 -0.29800400000000327
-        rotation 1 0 0 0.1999999999999989
-        children [
-          DEF externBall Shape {
-            appearance PBRAppearance {
-              roughness 0.5
-            }
-            geometry Sphere {
-              radius 0.2
-              subdivision 3
-            }
-            castShadows FALSE
-          }
-          Transform {
-            translation 0 0.75 0
-            children [
-              Shape {
-                appearance PBRAppearance {
-                  baseColor 1 0 0
-                  roughness 0.5
-                  metalness 0
-                  IBLStrength 2
-                }
-                geometry Cylinder {
-                  height 1.5
-                  radius 0.01
-                }
-                castShadows FALSE
-              }
-            ]
-          }
-        ]
-        boundingObject USE externBall
-        physics Physics {
-          density -1
-          mass 2
-        }
-      }
-    }
-  ]
-  name "robot(1)"
-  boundingObject USE externBody
+  controller "my_controller_2_leg_py"
 }
