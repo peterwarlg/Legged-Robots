@@ -62,30 +62,30 @@ class RobotStatus:
         self.rotation_matrix_W_under_B: np.ndarray = np.eye(3, dtype=float)  # world->body
 
         # A r x z
-        self.joint_space_lxz_LegA = JointSpaceRXZL(0.8, 0.0, 0.0, 0.0)
-        self.joint_space_lxz_dot_LegA = JointSpaceRXZL(0.0, 0.0, 0.0, 0.0)
+        self.leg_a_joint_space = JointSpaceRXZL(0.8, 0.0, 0.0, 0.0)
+        self.leg_a_joint_space_dot = JointSpaceRXZL(0.0, 0.0, 0.0, 0.0)
         # B r x z
-        self.joint_space_lxz_LegB = JointSpaceRXZL(0.8, 0.0, 0.0, 0.0)
-        self.joint_space_lxz_dot_LegB = JointSpaceRXZL(0.0, 0.0, 0.0, 0.0)
+        self.leg_b_joint_space = JointSpaceRXZL(0.8, 0.0, 0.0, 0.0)
+        self.leg_b_joint_space_dot = JointSpaceRXZL(0.0, 0.0, 0.0, 0.0)
 
-        # A: x z z
+        # A: r x z
         self.Point_hat_B_LegA: np.ndarray = np.array([0.0, 0.0, 0.0])
         self.Point_hat_H_LegA: np.ndarray = np.array([0.0, 0.0, 0.0])
-        self.Point_hat_B_desire_LegA: np.ndarray = np.array([0.0, 0.0, 0.0])
-        self.Point_hat_H_desire_LegA: np.ndarray = np.array([0.0, 0.0, 0.0])
-        # B: x z z
+        self.Point_hat_B_LegA_desire: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_H_LegA_desire: np.ndarray = np.array([0.0, 0.0, 0.0])
+        # B: r x z
         self.Point_hat_B_LegB: np.ndarray = np.array([0.0, 0.0, 0.0])
         self.Point_hat_H_LegB: np.ndarray = np.array([0.0, 0.0, 0.0])
-        self.Point_hat_B_desire_LegB: np.ndarray = np.array([0.0, 0.0, 0.0])
-        self.Point_hat_H_desire_LegB: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_B_LegB_desire: np.ndarray = np.array([0.0, 0.0, 0.0])
+        self.Point_hat_H_LegB_desire: np.ndarray = np.array([0.0, 0.0, 0.0])
 
         self.is_foot_touching_flg_A: bool = True
         self.is_foot_touching_flg_B: bool = True
         self.Ts: float = 0.0
-        self.x_dot: float = 0.0
-        self.z_dot: float = 0.0
-        self.x_dot_desire: float = 0.0
-        self.z_dot_desire: float = 0.0
+        self.body_spd_x: float = 0.0
+        self.body_spd_z: float = 0.0
+        self.target_body_spd_x: float = 0.0
+        self.target_body_spd_z: float = 0.0
 
         self.system_ms: int = 0
         self.phase_state: int = THRUST_A

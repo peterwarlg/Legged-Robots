@@ -52,54 +52,54 @@ def updateRobotState():
         copy.deepcopy(robot_status.rotation_matrix_B_under_W))
 
     # 弹簧长度及其导数更新
-    robot_status.joint_space_lxz_dot_LegA.spring_len = \
-        (devices.get_spring_length_A() - robot_status.joint_space_lxz_LegA.spring_len) / (0.001 * TIME_STEP)
-    robot_status.joint_space_lxz_dot_LegB.spring_len = \
-        (devices.get_spring_length_B() - robot_status.joint_space_lxz_LegB.spring_len) / (0.001 * TIME_STEP)
-    robot_status.joint_space_lxz_LegA.spring_len = devices.get_spring_length_A()
-    robot_status.joint_space_lxz_LegB.spring_len = devices.get_spring_length_B()
+    robot_status.leg_a_joint_space_dot.spring_len = \
+        (devices.get_spring_length_A() - robot_status.leg_a_joint_space.spring_len) / (0.001 * TIME_STEP)
+    robot_status.leg_b_joint_space_dot.spring_len = \
+        (devices.get_spring_length_B() - robot_status.leg_b_joint_space.spring_len) / (0.001 * TIME_STEP)
+    robot_status.leg_a_joint_space.spring_len = devices.get_spring_length_A()
+    robot_status.leg_b_joint_space.spring_len = devices.get_spring_length_B()
 
     cur_r_leg_a: float = devices.get_spring_length_A() - devices.get_shorten_length_A()
-    cur_r_dot_leg_a = (cur_r_leg_a - robot_status.joint_space_lxz_LegA.r) / (0.001 * TIME_STEP)
+    cur_r_dot_leg_a = (cur_r_leg_a - robot_status.leg_a_joint_space.r) / (0.001 * TIME_STEP)
 
     cur_r_leg_b: float = devices.get_spring_length_B() - devices.get_shorten_length_B()
-    cur_r_dot_leg_b = (cur_r_leg_b - robot_status.joint_space_lxz_LegB.r) / (0.001 * TIME_STEP)
+    cur_r_dot_leg_b = (cur_r_leg_b - robot_status.leg_b_joint_space.r) / (0.001 * TIME_STEP)
 
-    robot_status.joint_space_lxz_LegA.r = cur_r_leg_a
-    robot_status.joint_space_lxz_dot_LegA.r = robot_status.joint_space_lxz_dot_LegA.r * (
+    robot_status.leg_a_joint_space.r = cur_r_leg_a
+    robot_status.leg_a_joint_space_dot.r = robot_status.leg_a_joint_space_dot.r * (
             1.0 - ALPHA) + cur_r_dot_leg_a * ALPHA  # first order filter
 
-    robot_status.joint_space_lxz_LegB.r = cur_r_leg_b
-    robot_status.joint_space_lxz_dot_LegB.r = robot_status.joint_space_lxz_dot_LegB.r * (
+    robot_status.leg_b_joint_space.r = cur_r_leg_b
+    robot_status.leg_b_joint_space_dot.r = robot_status.leg_b_joint_space_dot.r * (
             1.0 - ALPHA) + cur_r_dot_leg_b * ALPHA  # first order filter
 
     # X、Z关节角度更新*/
     cur_x_motor_angle_a: float = devices.get_X_motor_angle_A()
-    cur_x_motor_angle_dot_a: float = (cur_x_motor_angle_a - robot_status.joint_space_lxz_LegA.X_motor_angle) / (
+    cur_x_motor_angle_dot_a: float = (cur_x_motor_angle_a - robot_status.leg_a_joint_space.X_motor_angle) / (
             0.001 * TIME_STEP)
-    robot_status.joint_space_lxz_LegA.X_motor_angle = cur_x_motor_angle_a
-    robot_status.joint_space_lxz_dot_LegA.X_motor_angle = robot_status.joint_space_lxz_dot_LegA.X_motor_angle * (
+    robot_status.leg_a_joint_space.X_motor_angle = cur_x_motor_angle_a
+    robot_status.leg_a_joint_space_dot.X_motor_angle = robot_status.leg_a_joint_space_dot.X_motor_angle * (
             1.0 - ALPHA) + cur_x_motor_angle_dot_a * ALPHA  # first order filter
 
     cur_z_motor_angle_a = devices.get_Z_motor_angle_A()
-    cur_z_motor_angle_dot_a = (cur_z_motor_angle_a - robot_status.joint_space_lxz_LegA.Z_motor_angle) / (
+    cur_z_motor_angle_dot_a = (cur_z_motor_angle_a - robot_status.leg_a_joint_space.Z_motor_angle) / (
             0.001 * TIME_STEP)
-    robot_status.joint_space_lxz_LegA.Z_motor_angle = cur_z_motor_angle_a
-    robot_status.joint_space_lxz_dot_LegA.Z_motor_angle = robot_status.joint_space_lxz_dot_LegA.Z_motor_angle * (
+    robot_status.leg_a_joint_space.Z_motor_angle = cur_z_motor_angle_a
+    robot_status.leg_a_joint_space_dot.Z_motor_angle = robot_status.leg_a_joint_space_dot.Z_motor_angle * (
             1.0 - ALPHA) + cur_z_motor_angle_dot_a * ALPHA  # first order filter
 
     cur_x_motor_angle_b: float = devices.get_X_motor_angle_B()
-    cur_x_motor_angle_dot_a: float = (cur_x_motor_angle_b - robot_status.joint_space_lxz_LegB.X_motor_angle) / (
+    cur_x_motor_angle_dot_a: float = (cur_x_motor_angle_b - robot_status.leg_b_joint_space.X_motor_angle) / (
             0.001 * TIME_STEP)
-    robot_status.joint_space_lxz_LegB.X_motor_angle = cur_x_motor_angle_b
-    robot_status.joint_space_lxz_dot_LegB.X_motor_angle = robot_status.joint_space_lxz_dot_LegB.X_motor_angle * (
+    robot_status.leg_b_joint_space.X_motor_angle = cur_x_motor_angle_b
+    robot_status.leg_b_joint_space_dot.X_motor_angle = robot_status.leg_b_joint_space_dot.X_motor_angle * (
             1.0 - ALPHA) + cur_x_motor_angle_dot_a * ALPHA  # first order filter
 
     cur_z_motor_angle_b = devices.get_Z_motor_angle_B()
-    cur_z_motor_angle_dot_b = (cur_z_motor_angle_b - robot_status.joint_space_lxz_LegB.Z_motor_angle) / (
+    cur_z_motor_angle_dot_b = (cur_z_motor_angle_b - robot_status.leg_b_joint_space.Z_motor_angle) / (
             0.001 * TIME_STEP)
-    robot_status.joint_space_lxz_LegB.Z_motor_angle = cur_z_motor_angle_b
-    robot_status.joint_space_lxz_dot_LegB.Z_motor_angle = robot_status.joint_space_lxz_dot_LegB.Z_motor_angle * (
+    robot_status.leg_b_joint_space.Z_motor_angle = cur_z_motor_angle_b
+    robot_status.leg_b_joint_space_dot.Z_motor_angle = robot_status.leg_b_joint_space_dot.Z_motor_angle * (
             1.0 - ALPHA) + cur_z_motor_angle_dot_b * ALPHA  # first order filter
 
     # 机器人在世界坐标系下水平速度估计更新
@@ -124,8 +124,8 @@ def forwardKinematics(joint_point: JointSpaceRXZL) -> np.ndarray:
 
 def update_xz_dot():
     global robot_status
-    robot_status.Point_hat_B_LegA = forwardKinematics(robot_status.joint_space_lxz_LegA)
-    robot_status.Point_hat_B_LegB = forwardKinematics(robot_status.joint_space_lxz_LegB)
+    robot_status.Point_hat_B_LegA = forwardKinematics(robot_status.leg_a_joint_space)
+    robot_status.Point_hat_B_LegB = forwardKinematics(robot_status.leg_b_joint_space)
     #  转换到{H}坐标系下
     pre_x_a = robot_status.Point_hat_H_LegA[0]
     pre_z_a = robot_status.Point_hat_H_LegA[2]
@@ -156,11 +156,11 @@ def update_xz_dot():
     robot_status.pre_x_dot_LegB, robot_status.pre_z_dot_LegB = now_x_dot_b, now_z_dot_b
 
     if (robot_status.phase_state == COMPRESSION_A) or (robot_status.phase_state == THRUST_A):
-        robot_status.x_dot = now_x_dot_a
-        robot_status.z_dot = now_z_dot_a
+        robot_status.body_spd_x = now_x_dot_a
+        robot_status.body_spd_z = now_z_dot_a
     if (robot_status.phase_state == COMPRESSION_B) or (robot_status.phase_state == THRUST_B):
-        robot_status.x_dot = now_x_dot_b
-        robot_status.z_dot = now_z_dot_b
+        robot_status.body_spd_x = now_x_dot_b
+        robot_status.body_spd_z = now_z_dot_b
 
 
 def update_last_Ts():
@@ -178,15 +178,15 @@ def update_last_Ts():
 def updateRobotStateMachine():
     global robot_status
     if robot_status.phase_state == LOADING_A:
-        if robot_status.joint_space_lxz_LegA.spring_len < robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.leg_a_joint_space.spring_len < robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.phase_state = COMPRESSION_A
         return
     elif robot_status.phase_state == COMPRESSION_A:
-        if robot_status.joint_space_lxz_dot_LegA.spring_len > 0.0:
+        if robot_status.leg_a_joint_space_dot.spring_len > 0.0:
             robot_status.phase_state = THRUST_A
             return
     elif robot_status.phase_state == THRUST_A:
-        if robot_status.joint_space_lxz_LegA.spring_len > robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.leg_a_joint_space.spring_len > robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.phase_state = UNLOADING_A
         return
     elif robot_status.phase_state == UNLOADING_A:
@@ -199,15 +199,15 @@ def updateRobotStateMachine():
         return
     # B
     elif robot_status.phase_state == LOADING_B:
-        if robot_status.joint_space_lxz_LegB.spring_len < robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.leg_b_joint_space.spring_len < robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.phase_state = COMPRESSION_B
         return
     elif robot_status.phase_state == COMPRESSION_B:
-        if robot_status.joint_space_lxz_dot_LegB.spring_len > 0.0:
+        if robot_status.leg_b_joint_space_dot.spring_len > 0.0:
             robot_status.phase_state = THRUST_B
             return
     elif robot_status.phase_state == THRUST_B:
-        if robot_status.joint_space_lxz_LegB.spring_len > robot_status.spring_normal_length * robot_status.r_threshold:
+        if robot_status.leg_b_joint_space.spring_len > robot_status.spring_normal_length * robot_status.r_threshold:
             robot_status.phase_state = UNLOADING_B
         return
     elif robot_status.phase_state == UNLOADING_B:
@@ -223,29 +223,29 @@ def updateRobotStateMachine():
 
 
 def position_A_4_landing():
-    r_a = robot_status.joint_space_lxz_LegA.r
-    x_f = robot_status.x_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
-            robot_status.x_dot - robot_status.x_dot_desire)
-    z_f = robot_status.z_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
-            robot_status.z_dot - robot_status.z_dot_desire)
+    r_a = robot_status.leg_a_joint_space.r
+    x_f = robot_status.body_spd_x * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
+            robot_status.body_spd_x - robot_status.target_body_spd_x)
+    z_f = robot_status.body_spd_z * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
+            robot_status.body_spd_z - robot_status.target_body_spd_z)
     y_f = -math.sqrt(r_a * r_a - x_f * x_f - z_f * z_f)
 
-    robot_status.Point_hat_H_desire_LegA = np.array([x_f, y_f, z_f])
+    robot_status.Point_hat_H_LegA_desire = np.array([x_f, y_f, z_f])
 
     # 转到{B}坐标系下 P_B = R^B_H * P_H
-    robot_status.Point_hat_B_desire_LegA = copy.deepcopy(
-        robot_status.rotation_matrix_W_under_B @ robot_status.Point_hat_H_desire_LegA)
+    robot_status.Point_hat_B_LegA_desire = copy.deepcopy(
+        robot_status.rotation_matrix_W_under_B @ robot_status.Point_hat_H_LegA_desire)
 
     #  计算期望关节角
-    [x_f_a, y_f_a, z_f_a] = robot_status.Point_hat_H_desire_LegA
+    [x_f_a, y_f_a, z_f_a] = robot_status.Point_hat_H_LegA_desire
     x_angle_desire = math.atan(z_f_a / y_f_a) * 180.0 / math.pi
     z_angle_desire = math.asin(x_f_a / r_a) * 180.0 / math.pi
 
     #  控制关节角
-    x_angle = robot_status.joint_space_lxz_LegA.X_motor_angle
-    z_angle = robot_status.joint_space_lxz_LegA.Z_motor_angle
-    x_angle_dot = robot_status.joint_space_lxz_dot_LegA.X_motor_angle
-    z_angle_dot = robot_status.joint_space_lxz_dot_LegA.Z_motor_angle
+    x_angle = robot_status.leg_a_joint_space.X_motor_angle
+    z_angle = robot_status.leg_a_joint_space.Z_motor_angle
+    x_angle_dot = robot_status.leg_a_joint_space_dot.X_motor_angle
+    z_angle_dot = robot_status.leg_a_joint_space_dot.Z_motor_angle
     target_torque_x = -robot_status.leg_kp * (x_angle - x_angle_desire) - robot_status.leg_kd * x_angle_dot
     target_torque_z = -robot_status.leg_kp * (z_angle - z_angle_desire) - robot_status.leg_kd * z_angle_dot
     print('LegA Tx Tz: ', target_torque_x, target_torque_z)
@@ -254,29 +254,29 @@ def position_A_4_landing():
 
 
 def position_B_4_landing():
-    r_b = robot_status.joint_space_lxz_LegB.r
-    x_f = robot_status.x_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
-            robot_status.x_dot - robot_status.x_dot_desire)
-    z_f = robot_status.z_dot * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
-            robot_status.z_dot - robot_status.z_dot_desire)
+    r_b = robot_status.leg_b_joint_space.r
+    x_f = robot_status.body_spd_x * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
+            robot_status.body_spd_x - robot_status.target_body_spd_x)
+    z_f = robot_status.body_spd_z * robot_status.Ts / 2.0 + robot_status.k_xz_dot * (
+            robot_status.body_spd_z - robot_status.target_body_spd_z)
     y_f = -math.sqrt(r_b * r_b - x_f * x_f - z_f * z_f)
 
-    robot_status.Point_hat_H_desire_LegB = np.array([x_f, y_f, z_f])
+    robot_status.Point_hat_H_LegB_desire = np.array([x_f, y_f, z_f])
 
     # 转到{B}坐标系下 P_B = R^B_H * P_H
-    robot_status.Point_hat_B_desire_LegB = copy.deepcopy(
-        robot_status.rotation_matrix_W_under_B @ robot_status.Point_hat_H_desire_LegB)
+    robot_status.Point_hat_B_LegB_desire = copy.deepcopy(
+        robot_status.rotation_matrix_W_under_B @ robot_status.Point_hat_H_LegB_desire)
 
     #  计算期望关节角
-    [x_f_b, y_f_b, z_f_b] = robot_status.Point_hat_H_desire_LegB
+    [x_f_b, y_f_b, z_f_b] = robot_status.Point_hat_H_LegB_desire
     x_angle_desire = math.atan(z_f_b / y_f_b) * 180.0 / math.pi
     z_angle_desire = math.asin(x_f_b / r_b) * 180.0 / math.pi
 
     #  控制关节角
-    x_angle = robot_status.joint_space_lxz_LegB.X_motor_angle
-    z_angle = robot_status.joint_space_lxz_LegB.Z_motor_angle
-    x_angle_dot = robot_status.joint_space_lxz_dot_LegB.X_motor_angle
-    z_angle_dot = robot_status.joint_space_lxz_dot_LegB.Z_motor_angle
+    x_angle = robot_status.leg_b_joint_space.X_motor_angle
+    z_angle = robot_status.leg_b_joint_space.Z_motor_angle
+    x_angle_dot = robot_status.leg_b_joint_space_dot.X_motor_angle
+    z_angle_dot = robot_status.leg_b_joint_space_dot.Z_motor_angle
     target_torque_x = -robot_status.leg_kp * (x_angle - x_angle_desire) - robot_status.leg_kd * x_angle_dot
     target_torque_z = -robot_status.leg_kp * (z_angle - z_angle_desire) - robot_status.leg_kd * z_angle_dot
     devices.set_X_torque_B(target_torque_x)
@@ -287,8 +287,8 @@ def position_B_4_landing():
 def robot_control():
     # common控制部分
     # 2. 控制弹簧
-    dx_a = robot_status.spring_normal_length - robot_status.joint_space_lxz_LegA.spring_len  # 求压缩量
-    dx_b = robot_status.spring_normal_length - robot_status.joint_space_lxz_LegB.spring_len  # 求压缩量
+    dx_a = robot_status.spring_normal_length - robot_status.leg_a_joint_space.spring_len  # 求压缩量
+    dx_b = robot_status.spring_normal_length - robot_status.leg_b_joint_space.spring_len  # 求压缩量
     f_spring_a = dx_a * robot_status.k_spring
     f_spring_b = dx_b * robot_status.k_spring
 
@@ -430,10 +430,10 @@ keyboard.enable(TIME_STEP)
 while robot.step(TIME_STEP) != -1:
     new_key = keyboard.getKey()
     if new_key == Keyboard.UP:
-        robot_status.x_dot_desire += 0.001
+        robot_status.target_body_spd_x += 0.001
     if new_key == Keyboard.DOWN:
-        robot_status.x_dot_desire -= 0.001
-    print(robot_status.x_dot_desire)
+        robot_status.target_body_spd_x -= 0.001
+    print(robot_status.target_body_spd_x)
     new_key = None
     # Read the sensors:
     # Enter here functions to read sensor data, like:
@@ -457,8 +457,8 @@ while robot.step(TIME_STEP) != -1:
         "robot state: ", state_names[robot_status.phase_state],
         'A offset: ', robot_status.offset_A,
         'B offset: ', robot_status.offset_B,
-        'Angle of B: ', robot_status.joint_space_lxz_LegB.X_motor_angle,
-        robot_status.joint_space_lxz_LegB.Z_motor_angle,
+        'Angle of B: ', robot_status.leg_b_joint_space.X_motor_angle,
+        robot_status.leg_b_joint_space.Z_motor_angle,
 
     )
     # print(robot_status.Point_hat_B_desire_a)
