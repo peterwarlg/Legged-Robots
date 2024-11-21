@@ -248,7 +248,6 @@ def position_A_4_landing():
     z_angle_dot = robot_status.leg_a_joint_space_dot.Z_motor_angle
     target_torque_x = -robot_status.leg_kp * (x_angle - x_angle_desire) - robot_status.leg_kd * x_angle_dot
     target_torque_z = -robot_status.leg_kp * (z_angle - z_angle_desire) - robot_status.leg_kd * z_angle_dot
-    print('LegA Tx Tz: ', target_torque_x, target_torque_z)
     devices.set_X_torque_A(target_torque_x)
     devices.set_Z_torque_A(target_torque_z)
 
@@ -281,7 +280,6 @@ def position_B_4_landing():
     target_torque_z = -robot_status.leg_kp * (z_angle - z_angle_desire) - robot_status.leg_kd * z_angle_dot
     devices.set_X_torque_B(target_torque_x)
     devices.set_Z_torque_B(target_torque_z)
-    print('LegB Tx Tz: ', target_torque_x, target_torque_z)
 
 
 def robot_control():
@@ -433,7 +431,6 @@ while robot.step(TIME_STEP) != -1:
         robot_status.target_body_spd_x += 0.001
     if new_key == Keyboard.DOWN:
         robot_status.target_body_spd_x -= 0.001
-    print(robot_status.target_body_spd_x)
     new_key = None
     # Read the sensors:
     # Enter here functions to read sensor data, like:
@@ -453,15 +450,14 @@ while robot.step(TIME_STEP) != -1:
     ]
     updateRobotState()
     robot_control()
-    print(
-        "robot state: ", state_names[robot_status.phase_state],
-        'A offset: ', robot_status.offset_A,
-        'B offset: ', robot_status.offset_B,
-        'Angle of B: ', robot_status.leg_b_joint_space.X_motor_angle,
-        robot_status.leg_b_joint_space.Z_motor_angle,
-
-    )
-    # print(robot_status.Point_hat_B_desire_a)
+    # print(
+    #     "robot state: ", state_names[robot_status.phase_state],
+    #     'A offset: ', robot_status.offset_A,
+    #     'B offset: ', robot_status.offset_B,
+    #     'Angle of B: ', robot_status.leg_b_joint_space.X_motor_angle,
+    #     robot_status.leg_b_joint_space.Z_motor_angle,
+    #
+    # )
     # Process sensor data here.
 
     # Enter here functions to send actuator commands, like:

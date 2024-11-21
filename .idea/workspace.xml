@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="47acc47a-20cd-4129-9386-b78ebe01e032" name="变更" comment="" />
+    <list default="true" id="47acc47a-20cd-4129-9386-b78ebe01e032" name="变更" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/my_controller_2_leg_py/my_controller_2_leg_py.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/my_controller_2_leg_py/my_controller_2_leg_py.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/worlds/.Hopping-in-Three-Dimensions-2Leg.wbproj" beforeDir="false" afterPath="$PROJECT_DIR$/worlds/.Hopping-in-Three-Dimensions-2Leg.wbproj" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="2oi2bW1dLxY5Wd863eiSsEDl7IT" />
   <component name="ProjectViewState">
