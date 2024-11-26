@@ -15,6 +15,8 @@
   - TODO
 - 4-leg robot with 12-dof trot/pace/bound
   - TODO
+- 4-leg robot with 12-dof with Reinforcement Learning Controller
+  - Ongoing
 
 # Part I: Legged Robots
 
@@ -31,3 +33,12 @@
   - all C/Cpp code are tried to translated to python though;
 - ROS/ROS2
 - ...
+
+
+# Update Logging
+things before 2024-11-24:
+a 2-leg robot which can run (with max speed 2 m/s approximately)
+
+2024-11-24：
+skip all the works about 4-legs robot, and start work with 12-dof dog using deep reinforcement learning
+- create project and start modeling

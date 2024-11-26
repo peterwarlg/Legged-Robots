@@ -1,0 +1,136 @@
+#VRML_SIM R2020b utf8
+WorldInfo {
+  basicTimeStep 2
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.030099179978763328 -0.9904507428481333 -0.13454131468135325 2.6839037053506716
+  position -3.6938041108324735 2.904025211672783 -4.615116714175283
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 600 900
+  floorTileSize 1.5 1.5
+  wallHeight 0.001
+}
+Robot {
+  translation 0.1 0.94 0.1
+  children [
+    Transform {
+      translation -0.7 0 0.25
+      children [
+        Hinge2Joint {
+          jointParameters HingeJointParameters {
+          }
+          jointParameters2 JointParameters {
+          }
+          device [
+            RotationalMotor {
+              name "X rotational motor RR"
+              minPosition -0.5
+              maxPosition 0.5
+              maxTorque 1000
+            }
+            PositionSensor {
+              name "X position sensor RR"
+            }
+          ]
+          device2 [
+            RotationalMotor {
+              name "Z rotational motor RR"
+              maxTorque 1000
+            }
+            PositionSensor {
+              name "Z position sensor RR"
+            }
+          ]
+          endPoint Solid {
+            translation -3.132605147929815e-13 0.00022956194274170732 -1.2420957273116862e-20
+            children [
+              SliderJoint {
+                jointParameters JointParameters {
+                  axis 0 1 0
+                  minStop -0.4
+                  dampingConstant 10
+                  staticFriction 0.2
+                }
+                device [
+                  LinearMotor {
+                    name "Spring linear motor RR"
+                    maxForce 1600
+                  }
+                  PositionSensor {
+                    name "Spring position sensor RR"
+                  }
+                ]
+              }
+              Transform {
+                rotation 0 0 1 1.5708
+                children [
+                  Shape {
+                    appearance PBRAppearance {
+                      baseColor 1 0 0
+                    }
+                    geometry Cylinder {
+                      radius 0.01
+                    }
+                    isPickable FALSE
+                  }
+                ]
+              }
+              Transform {
+                rotation 1 0 0 -1.5708
+                children [
+                  Shape {
+                    appearance PBRAppearance {
+                      baseColor 0 0 1
+                    }
+                    geometry Cylinder {
+                      radius 0.01
+                    }
+                    isPickable FALSE
+                  }
+                ]
+              }
+            ]
+            name "RR"
+            boundingObject Sphere {
+              radius 0.01
+            }
+            physics Physics {
+              density -1
+              mass 0.5
+            }
+          }
+        }
+      ]
+    }
+    DEF body Shape {
+      appearance PBRAppearance {
+        baseColor 1 0.792 0
+        metalness 0
+      }
+      geometry Box {
+        size 1.6 0.1 0.6
+      }
+      castShadows FALSE
+    }
+    InertialUnit {
+      boundingObject USE body
+      physics Physics {
+        density -1
+        mass 0.5
+      }
+    }
+  ]
+  name "robot(1)"
+  boundingObject USE body
+  physics Physics {
+    density -1
+    mass 14
+  }
+  controller "my_controller_4_leg_py"
+}
