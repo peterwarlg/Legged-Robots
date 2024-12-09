@@ -1,6 +1,6 @@
 # Legged-Robots
 
-此项目用于学习与研究机器人学领域知识，将从Legged Robots That Balance一书入手，逐渐搭建并完善其中所涉及到所有机器人；
+This is an implementation and expansion‌ of the book "Legged Robots That Balance";
 
 - one-leg robot
   - Done
