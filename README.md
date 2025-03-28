@@ -1,6 +1,10 @@
 # Legged-Robots
 
+<<<<<<< HEAD
 From 《Legged Robots That Balance》 to DRL
+=======
+This is an implementation and expansion‌ of the book "Legged Robots That Balance";
+>>>>>>> 4d9a0116f7fe14599f67261d5d562d1e1670ce33
 
 - one-leg robot
   - Done
@@ -44,8 +48,13 @@ things before 2024-11-24:
 a 2-leg robot which can run (with max speed 2 m/s approximately)
 
 2024-11-24：
+<<<<<<< HEAD
 skip all the works about 4-legs robot, and start work with 12-dof dog using deep reinforcement learning (that would be a huge work)
 - create project and start modeling
 
 2025-03-28:
 add an Spot　Ｒｏｂｏｔ　ｕｓｉｎｇ　ＰＰＯ
+=======
+skip all the works about 4-legs robot, and start work with 12-dof dog using deep reinforcement learning
+- create project and start modeling
+>>>>>>> 4d9a0116f7fe14599f67261d5d562d1e1670ce33
