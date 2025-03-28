@@ -1,10 +1,7 @@
 # Legged-Robots
 
-<<<<<<< HEAD
-From 《Legged Robots That Balance》 to DRL
-=======
-This is an implementation and expansion‌ of the book "Legged Robots That Balance";
->>>>>>> 4d9a0116f7fe14599f67261d5d562d1e1670ce33
+From 《Legged Robots That Balance》 to DRL. This is an implementation and expansion of the book "Legged Robots That Balance";
+
 
 - one-leg robot
   - Done
@@ -23,9 +20,11 @@ This is an implementation and expansion‌ of the book "Legged Robots That Balan
   - Ongoing
 
 # Part I: Legged Robots
+## 2-leg biped robot in Webots
 in *Boston_Legged_Robot/world/Hopping-in-Three-Dimensions-2Leg.wbt*
 
 # Part II: DRL Robot
+##Spot robot using PPO in Webots(r2025a):
 in *Spot_RL/world/Spot.wbt* with controller **PPO**
 
 ## software that needed
@@ -37,8 +36,9 @@ in *Spot_RL/world/Spot.wbt* with controller **PPO**
     - AI libs and framework (but not now, in future however)
 - Mujoco
   - good for RL/DRL
+- Webots
+  - GUI and embedded Robot
 - C/C++
-  - all C/Cpp code are tried to translated to python though;
 - ROS/ROS2
 - ...
 
@@ -48,13 +48,9 @@ things before 2024-11-24:
 a 2-leg robot which can run (with max speed 2 m/s approximately)
 
 2024-11-24：
-<<<<<<< HEAD
 skip all the works about 4-legs robot, and start work with 12-dof dog using deep reinforcement learning (that would be a huge work)
 - create project and start modeling
 
 2025-03-28:
-add an Spot　Ｒｏｂｏｔ　ｕｓｉｎｇ　ＰＰＯ
-=======
-skip all the works about 4-legs robot, and start work with 12-dof dog using deep reinforcement learning
-- create project and start modeling
->>>>>>> 4d9a0116f7fe14599f67261d5d562d1e1670ce33
+add Spot robot using PPO in webots
+
