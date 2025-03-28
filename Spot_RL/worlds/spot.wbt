@@ -1,0 +1,49 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/boston_dynamics/spot/protos/Spot.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.08442070401235834 0.07695424818972757 0.993454170266355 1.6698366349359142
+  position 0.7145497001836357 -8.108873210893119 2.714484457202514
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  translation 0.07 0 0
+  floorSize 1000 1000
+}
+Spot {
+  hidden rotation_18 0 0 -1 7.0314536129507456e-06
+  hidden rotation_22 0 0 0.9999999999999999 6.771032553942165e-06
+  hidden rotation_26 0 0 -0.9999999999999999 7.191196027690791e-06
+  hidden rotation_30 0 0 1 7.1986644523452926e-06
+  translation -0.0018737398415889575 -3.31762087626379e-05 0.6084821521983789
+  rotation 0.01985693911727195 -0.9998028041068957 -0.0002342410753943912 0.0028838072449938784
+  controller "PPO"
+  supervisor TRUE
+  middleExtension [
+    GPS {
+      rotation -0.5773502691896257 0.5773502691896257 0.5773502691896257 2.0943951023931957
+      name "gps(1)"
+    }
+    Accelerometer {
+      rotation -0.5773502691896257 0.5773502691896257 0.5773502691896257 2.0943951023931957
+      name "accelerometer(1)"
+    }
+    InertialUnit {
+      rotation -0.5773502691896258 0.5773502691896258 0.5773502691896258 2.0943951023931957
+      name "inertial unit(1)"
+    }
+    Gyro {
+      rotation -0.5773502691896257 0.5773502691896257 0.5773502691896257 2.0943951023931957
+      name "gyro(1)"
+    }
+  ]
+}

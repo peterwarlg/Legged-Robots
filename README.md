@@ -1,12 +1,12 @@
 # Legged-Robots
 
-此项目用于学习与研究机器人学领域知识，将从Legged Robots That Balance一书入手，逐渐搭建并完善其中所涉及到所有机器人；
+From 《Legged Robots That Balance》 to DRL
 
 - one-leg robot
   - Done
 - 2-leg robot trot
   - Done
-  - ![2-leg robot biped](images/2-leg-biped-robot/Biping-in-Three-Dimensions-2Leg.gif)
+  - ![2-leg robot biped](Boston_Legged_Robot/images/2-leg-biped-robot/Biping-in-Three-Dimensions-2Leg.gif)
 - 4-leg robot trot
   - TODO
 - 4-leg robot pace
@@ -19,6 +19,10 @@
   - Ongoing
 
 # Part I: Legged Robots
+in *Boston_Legged_Robot/world/Hopping-in-Three-Dimensions-2Leg.wbt*
+
+# Part II: DRL Robot
+in *Spot_RL/world/Spot.wbt* with controller **PPO**
 
 ## software that needed
 - Webots (mainly with Python)
@@ -40,5 +44,8 @@ things before 2024-11-24:
 a 2-leg robot which can run (with max speed 2 m/s approximately)
 
 2024-11-24：
-skip all the works about 4-legs robot, and start work with 12-dof dog using deep reinforcement learning
+skip all the works about 4-legs robot, and start work with 12-dof dog using deep reinforcement learning (that would be a huge work)
 - create project and start modeling
+
+2025-03-28:
+add an Spot　Ｒｏｂｏｔ　ｕｓｉｎｇ　ＰＰＯ

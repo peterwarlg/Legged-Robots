@@ -1,0 +1,418 @@
+#VRML_SIM R2020b utf8
+WorldInfo {
+  basicTimeStep 2
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.04349304457916537 -0.9944627898460584 -0.095666685344632 2.355180751892913
+  position -7.534245632812889 3.28084664045743 -7.574072187846748
+  follow "robot"
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 600 900
+  floorTileSize 1.5 1.5
+  wallHeight 0.001
+}
+Robot {
+  translation 0 0.8 0
+  children [
+    Hinge2Joint {
+      jointParameters HingeJointParameters {
+      }
+      jointParameters2 JointParameters {
+      }
+      device [
+        RotationalMotor {
+          name "X rotational motor B"
+          minPosition -0.5
+          maxPosition 0.5
+          maxTorque 1000
+        }
+        PositionSensor {
+          name "X position sensor B"
+        }
+      ]
+      device2 [
+        RotationalMotor {
+          name "Z rotational motor B"
+          maxTorque 1000
+        }
+        PositionSensor {
+          name "Z position sensor B"
+        }
+      ]
+      endPoint Solid {
+        translation -3.132605147929815e-13 0.00022956194274170732 -1.2420957273116862e-20
+        children [
+          SliderJoint {
+            jointParameters JointParameters {
+              axis 0 1 0
+            }
+            device [
+              PositionSensor {
+                name "Shorten position sensor B"
+              }
+              LinearMotor {
+                name "Shorten linear motor B"
+                maxForce 1000
+              }
+            ]
+            endPoint Solid {
+              children [
+                Transform {
+                  rotation 1 0 0 -1.5708
+                  children [
+                    Shape {
+                      appearance PBRAppearance {
+                        baseColor 0 0 1
+                      }
+                      geometry Cylinder {
+                        height 1
+                        radius 0.01
+                      }
+                      isPickable FALSE
+                    }
+                  ]
+                }
+                SliderJoint {
+                  jointParameters JointParameters {
+                    axis 0 1 0
+                    minStop -0.4
+                    dampingConstant 10
+                    staticFriction 0.2
+                  }
+                  device [
+                    LinearMotor {
+                      name "Spring linear motor B"
+                      maxForce 1600
+                    }
+                    PositionSensor {
+                      name "Spring position sensor B"
+                    }
+                  ]
+                  endPoint Solid {
+                    children [
+                      Transform {
+                        rotation 1 0 0 -1.5708
+                        children [
+                          Shape {
+                            appearance PBRAppearance {
+                              baseColor 0 0 1
+                            }
+                            geometry Cylinder {
+                              height 1
+                              radius 0.01
+                            }
+                            isPickable FALSE
+                          }
+                        ]
+                      }
+                      DEF leg Shape {
+                        appearance PBRAppearance {
+                          baseColor 1 0.792157 0
+                          metalness 0
+                        }
+                        geometry Cylinder {
+                          height 1.58
+                          radius 0.02
+                        }
+                        castShadows FALSE
+                      }
+                      Transform {
+                        translation 0 -0.77 0
+                        children [
+                          DEF foot Shape {
+                            appearance PBRAppearance {
+                              baseColor 1 0.792157 0
+                              metalness 0
+                            }
+                            geometry Sphere {
+                              radius 0.03
+                              subdivision 3
+                            }
+                            castShadows FALSE
+                          }
+                          TouchSensor {
+                            name "touch sensor B"
+                            boundingObject USE foot
+                            physics Physics {
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                    boundingObject USE leg
+                    physics Physics {
+                      density -1
+                      mass 1
+                    }
+                  }
+                }
+              ]
+              name "move b solid"
+              boundingObject Sphere {
+                radius 0.01
+              }
+              physics Physics {
+                density -1
+                mass 0.001
+              }
+            }
+          }
+        ]
+        name "solid B"
+        boundingObject DEF shaft Shape {
+          appearance PBRAppearance {
+            baseColor 0 0 1
+            metalness 0
+          }
+          geometry Cylinder {
+            height 0.3
+            radius 0.05
+          }
+          castShadows FALSE
+        }
+        physics Physics {
+          density -1
+          mass 0.5
+        }
+      }
+    }
+    DEF body Shape {
+      appearance PBRAppearance {
+        baseColorMap ImageTexture {
+          url [
+            "textures/water.jpg"
+          ]
+        }
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.1
+        radius 0.6
+      }
+      castShadows FALSE
+    }
+    Hinge2Joint {
+      jointParameters HingeJointParameters {
+      }
+      jointParameters2 JointParameters {
+      }
+      device [
+        RotationalMotor {
+          name "X rotational motor A"
+          minPosition -0.5
+          maxPosition 0.5
+          maxTorque 1000
+        }
+        PositionSensor {
+          name "X position sensor A"
+        }
+      ]
+      device2 [
+        RotationalMotor {
+          name "Z rotational motor A"
+          maxTorque 1000
+        }
+        PositionSensor {
+          name "Z position sensor A"
+        }
+      ]
+      endPoint Solid {
+        translation -3.132605147929815e-13 0.00022956194274170732 -1.2420957273116862e-20
+        children [
+          Transform {
+            rotation 0 0 1 1.5708
+            children [
+              Shape {
+                appearance PBRAppearance {
+                  baseColor 1 0 0
+                }
+                geometry Cylinder {
+                  radius 0.01
+                }
+                isPickable FALSE
+              }
+            ]
+          }
+          Transform {
+            rotation 1 0 0 -1.5708
+            children [
+              Shape {
+                appearance PBRAppearance {
+                  baseColor 0 0 1
+                }
+                geometry Cylinder {
+                  radius 0.01
+                }
+                isPickable FALSE
+              }
+            ]
+          }
+          SliderJoint {
+            jointParameters JointParameters {
+              axis 0 1 0
+            }
+            device [
+              PositionSensor {
+                name "Shorten position sensor A"
+              }
+              LinearMotor {
+                name "Shorten linear motor A"
+                maxForce 1000
+              }
+            ]
+            endPoint Solid {
+              children [
+                Transform {
+                  rotation 1 0 0 -1.5708
+                  children [
+                    Shape {
+                      appearance PBRAppearance {
+                        baseColor 1 0 0
+                      }
+                      geometry Cylinder {
+                        height 1
+                        radius 0.01
+                      }
+                      isPickable FALSE
+                    }
+                  ]
+                }
+                SliderJoint {
+                  jointParameters JointParameters {
+                    axis 0 1 0
+                    minStop -0.4
+                    dampingConstant 10
+                    staticFriction 0.2
+                  }
+                  device [
+                    LinearMotor {
+                      name "Spring linear motor A"
+                      maxForce 1600
+                    }
+                    PositionSensor {
+                      name "Spring position sensor A"
+                    }
+                  ]
+                  endPoint Solid {
+                    children [
+                      Transform {
+                        rotation 0 0 1 1.5708
+                        children [
+                          Shape {
+                            appearance PBRAppearance {
+                              baseColor 1 0 0
+                            }
+                            geometry Cylinder {
+                              height 1
+                              radius 0.01
+                            }
+                            isPickable FALSE
+                          }
+                        ]
+                      }
+                      Transform {
+                        rotation 1 0 0 -1.5708
+                        children [
+                          Shape {
+                            appearance PBRAppearance {
+                              baseColor 0 0 1
+                            }
+                            geometry Cylinder {
+                              height 1
+                              radius 0.01
+                            }
+                            isPickable FALSE
+                          }
+                        ]
+                      }
+                      DEF leg Shape {
+                        appearance PBRAppearance {
+                          baseColor 0.666667 0.02 0.02
+                          metalness 0
+                        }
+                        geometry Cylinder {
+                          height 1.58
+                          radius 0.02
+                        }
+                        castShadows FALSE
+                      }
+                      Transform {
+                        translation 0 -0.77 0
+                        children [
+                          DEF foot Shape {
+                            appearance PBRAppearance {
+                              baseColor 1 0 0
+                              metalness 0
+                            }
+                            geometry Sphere {
+                              radius 0.03
+                              subdivision 3
+                            }
+                            castShadows FALSE
+                          }
+                          TouchSensor {
+                            name "touch sensor A"
+                            boundingObject USE foot
+                            physics Physics {
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                    boundingObject USE leg
+                    physics Physics {
+                      density -1
+                      mass 1
+                    }
+                  }
+                }
+              ]
+              name "move a solid"
+              boundingObject Sphere {
+                radius 0.01
+              }
+              physics Physics {
+                density -1
+                mass 0.001
+              }
+            }
+          }
+        ]
+        boundingObject DEF shaft Shape {
+          appearance PBRAppearance {
+            baseColor 0 0 1
+            metalness 0
+          }
+          geometry Cylinder {
+            height 0.3
+            radius 0.05
+          }
+          castShadows FALSE
+        }
+        physics Physics {
+          density -1
+          mass 0.5
+        }
+      }
+    }
+    InertialUnit {
+      boundingObject USE body
+      physics Physics {
+        density -1
+        mass 0.5
+      }
+    }
+  ]
+  boundingObject USE body
+  physics Physics {
+    density -1
+    mass 14
+  }
+  controller "my_controller_2_leg_py"
+}
