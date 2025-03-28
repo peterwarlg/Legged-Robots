@@ -2,7 +2,8 @@
 
 From 《Legged Robots That Balance》 to DRL. This is an implementation and expansion of the book "Legged Robots That Balance";
 
-
+# Part I: Legged Robots
+overview:
 - one-leg robot
   - Done
 - 2-leg robot trot
@@ -19,21 +20,41 @@ From 《Legged Robots That Balance》 to DRL. This is an implementation and expa
 - 4-leg robot with 12-dof with Reinforcement Learning Controller
   - Ongoing
 
-# Part I: Legged Robots
-## 2-leg biped robot in Webots
-in *Boston_Legged_Robot/world/Hopping-in-Three-Dimensions-2Leg.wbt*
+## 1.1 Two-leg biped robot in Webots
+- fIle:  *Boston_Legged_Robot/world/Hopping-in-Three-Dimensions-2Leg.wbt*
+- usage: opne .wbt and run
 
-# Part II: DRL Robot
-##Spot robot using PPO in Webots(r2025a):
-in *Spot_RL/world/Spot.wbt* with controller **PPO**
+# Part II: Robot using RL in Webots
+- requirements: webots r2025a
+- miniconda
+---
+overview:
 
-## software that needed
+|robot  |algorithm  |control mode       |      |
+|---    |---        |---                |---   |
+|Spot   |PPO    |position   |√      |
+|Spot   |SAC    |position   |×  |
+|Spot   |DDPG   |positon    |   ×   |
+|Spot   |TD3    |positon    |   ×   |
+|Spot   |PPO    |torque     |√      |
+|Spot   |SAC    |torque     |×  |
+|Spot   |DDPG   |torque     |   ×   |
+|Spot   |TD3    |torque     |   ×   |
+
+## 2.1 Spot robot using PPO in Webots(r2025a):
+- file: *Spot_RL/world/Spot.wbt* with controller **PPO**
+- usage: open .wbt and select controller PPO
+
+# Part III: Robot using DRL in Mujoco
+- requirements: mujoco 3.0+ 
+- miniconda
+
+## 3.1 Unitree go2 robot in Mujoco
+ongoing
+
+# software that needed
 - Webots (mainly with Python)
-  - Why Python?
-    - easy to code
-    - we don't have a real robot that
-    - math and robotics libs
-    - AI libs and framework (but not now, in future however)
+- pytorch
 - Mujoco
   - good for RL/DRL
 - Webots
